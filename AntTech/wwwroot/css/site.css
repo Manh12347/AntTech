@@ -1,22 +1,259 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+/* Reset cơ bản & Thiết lập Font */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa; /* Màu nền giống trang ví dụ */
+}
+
+a {
+    text-decoration: none;
+    color: inherit; /* Kế thừa màu từ phần tử cha */
+}
+
+ul {
+    list-style: none;
+}
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Navbar chính */
+.navbar {
+    background-color: #ffffff; /* Màu nền trắng */
+    border-bottom: 1px solid #e0e0e0; /* Đường viền mỏng bên dưới */
+    padding: 0.75rem 0; /* Padding trên dưới */
+    position: sticky; /* Giữ navbar cố định khi cuộn (tùy chọn) */
+    top: 0;
+    z-index: 1000;
+}
+
+/* Container để căn chỉnh nội dung navbar */
+.navbar-container {
+    max-width: 1200px; /* Giới hạn chiều rộng tối đa */
+    margin: 0 auto; /* Căn giữa container */
+    padding: 0 1rem; /* Padding trái phải */
+    display: flex;
+    justify-content: space-between; /* Phân bổ không gian */
+    align-items: center; /* Căn giữa các mục theo chiều dọc */
+    gap: 1rem; /* Khoảng cách giữa các nhóm chính */
+}
+
+/* Logo */
+.navbar-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    /* Thêm styling cho icon logo nếu có */
+}
+
+/* Phần giữa - danh sách link */
+.navbar-center {
+    flex-grow: 1; /* Cho phép phần giữa co giãn nếu cần */
+    display: flex;
+    justify-content: flex-start; /* Căn các link về bên trái của phần giữa */
+    margin-left: 2rem; /* Khoảng cách với logo */
+}
+
+.navbar-links {
+    display: flex;
+    gap: 0.5rem; /* Khoảng cách giữa các link chính */
+}
+
+/* Các link được style riêng (Shop, Agency, Publishing) */
+.nav-link-styled {
+    display: inline-flex; /* Để icon và text thẳng hàng */
+    align-items: center;
+    gap: 0.4rem; /* Khoảng cách giữa icon và text */
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #dcdcdc;
+    border-radius: 20px; /* Bo tròn góc */
+    font-size: 0.9rem;
+    color: #555;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+    .nav-link-styled:hover {
+        background-color: #f0f0f0;
+        color: #222;
+    }
+
+/* Nút Publishing có thể có màu nền nhẹ */
+.nav-publishing {
+    background-color: #e7f3ff; /* Màu xanh nhạt ví dụ */
+    border-color: #c3d9ff;
+    color: #0056b3;
+}
+
+    .nav-publishing:hover {
+        background-color: #d0e6ff;
+    }
+
+
+/* Phần bên phải */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Khoảng cách giữa các mục bên phải */
+}
+
+/* Nút tìm kiếm (icon) */
+.nav-search-btn {
+    font-size: 1.1rem;
+    color: #555;
+    padding: 0.3rem;
+}
+
+    .nav-search-btn:hover {
+        color: #000;
+    }
+
+
+/* Các link thường bên phải */
+.nav-link {
+    font-size: 0.95rem;
+    color: #555;
+    padding: 0.3rem 0;
+}
+
+    .nav-link:hover {
+        color: #0056b3; /* Màu xanh khi hover */
+    }
+
+/* Nút chính (Đăng nhập) */
+.btn {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #007bff; /* Màu xanh dương chính */
+    color: #ffffff;
+    border: 1px solid #007bff;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+/* ==================
+   Footer Styling
+   ================== */
+
+.site-footer {
+    background-color: #f8f9fa; /* Màu nền xám nhạt */
+    padding: 3rem 0 1.5rem 0; /* Padding trên, dưới */
+    border-top: 1px solid #e9ecef; /* Đường viền mỏng phía trên */
+    color: #555; /* Màu chữ mặc định */
+    font-size: 0.95rem; /* Cỡ chữ cơ bản cho footer */
+}
+
+.footer-container {
+    max-width: 1140px; /* Giới hạn chiều rộng */
+    margin: 0 auto; /* Căn giữa container */
+    padding: 0 1rem; /* Padding trái phải */
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
+    justify-content: space-between; /* Đẩy 2 cột ra xa nhau */
+    gap: 2rem; /* Khoảng cách giữa các cột nếu chúng gần nhau */
+    margin-bottom: 2rem; /* Khoảng cách với phần bản quyền */
+}
+
+.footer-column {
+    flex: 1; /* Cho phép các cột co giãn */
+    min-width: 250px; /* Chiều rộng tối thiểu trước khi xuống dòng */
+}
+
+    .footer-column h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333; /* Màu tiêu đề đậm hơn */
+    }
+
+/* Styling cho danh sách liên hệ */
+.contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start; /* Căn icon và text theo top nếu text dài */
+    margin-bottom: 0.8rem;
+    gap: 0.7rem; /* Khoảng cách giữa icon và text */
+    line-height: 1.5;
+}
+
+    .contact-item i {
+        margin-top: 0.15em; /* Điều chỉnh vị trí dọc của icon */
+        color: #777; /* Màu icon */
+        width: 18px; /* Đảm bảo các icon có chiều rộng cố định để căn chỉnh */
+        text-align: center;
+    }
+
+/* Styling cho danh sách 'Về chúng tôi' */
+.about-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .about-list li {
+        margin-bottom: 0.6rem;
+    }
+
+    .about-list a {
+        color: #6f42c1; /* Màu tím giống trong hình */
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+        .about-list a:hover {
+            color: #5a2aa0; /* Màu đậm hơn khi hover */
+            text-decoration: underline;
+        }
+
+/* Styling cho phần bản quyền */
+.footer-bottom {
+    text-align: center;
+    margin-top: 2rem; /* Khoảng cách với nội dung bên trên */
+    padding-top: 1.5rem; /* Khoảng cách với đường viền (nếu có) */
+    border-top: 1px solid #e9ecef; /* Đường viền phía trên phần bản quyền */
+    font-size: 0.85rem; /* Cỡ chữ nhỏ hơn */
+    color: #888; /* Màu chữ xám nhạt hơn */
+}
+
+/* Responsive adjustments (Ví dụ) */
+@media (max-width: 768px) {
+    .footer-content {
+        justify-content: flex-start; /* Không cần đẩy ra xa nữa khi xuống dòng */
+    }
+
+    .footer-column {
+        min-width: 100%; /* Mỗi cột chiếm toàn bộ chiều rộng */
+        margin-bottom: 2rem; /* Thêm khoảng cách dưới cho cột trên */
+    }
+
+        .footer-column:last-child {
+            margin-bottom: 0;
+        }
 }
