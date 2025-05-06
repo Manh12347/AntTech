@@ -1,19 +1,33 @@
-/* Reset cơ bản & Thiết lập Font */
+/* ===========================
+   1. Reset & Base Styles
+   =========================== */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+html {
+    height: 100%; /* Cần cho sticky footer */
+    scroll-behavior: smooth; /* Cuộn trang mượt hơn (tùy chọn) */
+}
+
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     line-height: 1.6;
-    background-color: #f8f9fa; /* Màu nền giống trang ví dụ */
+    background-color: #ffffff; /* Nền trắng cho toàn bộ trang */
+    color: #333;
+    /* === Sticky Footer Setup === */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* =========================== */
 }
 
 a {
     text-decoration: none;
-    color: inherit; /* Kế thừa màu từ phần tử cha */
+    color: inherit;
+    transition: color 0.2s ease; /* Thêm hiệu ứng chuyển màu cho link */
 }
 
 ul {
@@ -25,235 +39,364 @@ button {
     background: none;
     cursor: pointer;
     font-family: inherit;
+    padding: 0;
+    color: inherit;
 }
 
-/* Navbar chính */
+img {
+    max-width: 100%; /* Đảm bảo ảnh không bị tràn */
+    height: auto;
+}
+
+/* ===========================
+   2. Layout & Sticky Footer
+   =========================== */
+.page-content-wrapper {
+    flex-grow: 1; /* Quan trọng: Đẩy footer xuống */
+}
+
+/* Container chung để giới hạn chiều rộng nội dung */
+/* Sử dụng lại class này cho navbar-container và footer-container nếu muốn thẳng hàng hoàn toàn */
+.container,
+.navbar-container,
+.footer-container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Các breakpoint cho container (giống Bootstrap) */
+@media (min-width: 576px) {
+    .container, .navbar-container, .footer-container {
+        max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    .container, .navbar-container, .footer-container {
+        max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container, .navbar-container, .footer-container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container, .navbar-container, .footer-container {
+        max-width: 1140px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container, .navbar-container, .footer-container {
+        max-width: 1320px;
+    }
+}
+
+
+/* ===========================
+   3. Header & Navbar Styling
+   =========================== */
+header {
+    flex-shrink: 0; /* Ngăn header co lại */
+}
+
 .navbar {
-    background-color: #ffffff; /* Màu nền trắng */
-    border-bottom: 1px solid #e0e0e0; /* Đường viền mỏng bên dưới */
-    padding: 0.75rem 0; /* Padding trên dưới */
-    position: sticky; /* Giữ navbar cố định khi cuộn (tùy chọn) */
-    top: 0;
-    z-index: 1000;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e9ecef; /* Màu viền nhạt hơn */
+    padding: 0.5rem 0; /* Giảm padding */
+    /* position: sticky; top: 0; z-index: 1000; */ /* Bật lại nếu muốn navbar dính */
 }
 
-/* Container để căn chỉnh nội dung navbar */
+/* Không cần .navbar-container riêng nếu dùng chung .container */
+
 .navbar-container {
-    max-width: 1200px; /* Giới hạn chiều rộng tối đa */
-    margin: 0 auto; /* Căn giữa container */
-    padding: 0 1rem; /* Padding trái phải */
     display: flex;
-    justify-content: space-between; /* Phân bổ không gian */
-    align-items: center; /* Căn giữa các mục theo chiều dọc */
-    gap: 1rem; /* Khoảng cách giữa các nhóm chính */
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem; /* Giữ khoảng cách này hợp lý */
 }
 
-/* Logo */
 .navbar-logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    /* Thêm styling cho icon logo nếu có */
+    font-size: 1.4rem; /* Giảm nhẹ logo */
+    font-weight: 600; /* Giảm độ đậm */
+    color: #212529;
 }
 
-/* Phần giữa - danh sách link */
 .navbar-center {
-    flex-grow: 1; /* Cho phép phần giữa co giãn nếu cần */
+    flex-grow: 1;
     display: flex;
-    justify-content: flex-start; /* Căn các link về bên trái của phần giữa */
-    margin-left: 2rem; /* Khoảng cách với logo */
+    justify-content: flex-start;
+    margin-left: 1.5rem; /* Giảm khoảng cách */
 }
 
 .navbar-links {
     display: flex;
-    gap: 0.5rem; /* Khoảng cách giữa các link chính */
+    gap: 0.5rem;
 }
 
-/* Các link được style riêng (Shop, Agency, Publishing) */
 .nav-link-styled {
-    display: inline-flex; /* Để icon và text thẳng hàng */
+    display: inline-flex;
     align-items: center;
-    gap: 0.4rem; /* Khoảng cách giữa icon và text */
-    padding: 0.5rem 0.8rem;
-    border: 1px solid #dcdcdc;
-    border-radius: 20px; /* Bo tròn góc */
-    font-size: 0.9rem;
-    color: #555;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    gap: 0.3rem; /* Giảm khoảng cách icon-text */
+    padding: 0.4rem 0.7rem; /* Giảm padding */
+    border: 1px solid #dee2e6; /* Màu viền nhạt hơn */
+    border-radius: 16px; /* Giảm bo tròn nhẹ */
+    font-size: 0.85rem; /* Giảm font size */
+    color: #495057; /* Màu chữ xám hơn */
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-    .nav-link-styled:hover {
-        background-color: #f0f0f0;
-        color: #222;
+    .nav-link-styled i {
+        font-size: 0.9em; /* Icon nhỏ hơn text một chút */
     }
 
-/* Nút Publishing có thể có màu nền nhẹ */
+    .nav-link-styled:hover {
+        background-color: #e9ecef; /* Nền hover nhạt hơn */
+        color: #212529;
+        border-color: #ced4da;
+    }
+
 .nav-publishing {
-    background-color: #e7f3ff; /* Màu xanh nhạt ví dụ */
-    border-color: #c3d9ff;
-    color: #0056b3;
+    background-color: #e6f0ff; /* Màu xanh nhạt hơn */
+    border-color: #c2d9ff;
+    color: #0d6efd;
 }
 
     .nav-publishing:hover {
-        background-color: #d0e6ff;
+        background-color: #d0e0ff;
     }
 
-
-/* Phần bên phải */
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 1rem; /* Khoảng cách giữa các mục bên phải */
+    gap: 0.8rem; /* Giảm khoảng cách */
+    white-space: nowrap;
 }
 
-/* Nút tìm kiếm (icon) */
 .nav-search-btn {
-    font-size: 1.1rem;
-    color: #555;
-    padding: 0.3rem;
+    font-size: 1rem; /* Giảm nhẹ icon search */
+    color: #6c757d; /* Màu icon xám hơn */
+    padding: 0.4rem;
+    border-radius: 50%; /* Làm tròn nút search */
+    line-height: 1; /* Đảm bảo icon căn giữa */
+    width: 30px; /* Đặt kích thước cố định */
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
     .nav-search-btn:hover {
-        color: #000;
+        color: #212529;
+        background-color: #f1f3f5;
     }
 
-
-/* Các link thường bên phải */
 .nav-link {
-    font-size: 0.95rem;
-    color: #555;
+    font-size: 0.9rem; /* Giảm font */
+    color: #495057;
     padding: 0.3rem 0;
 }
 
     .nav-link:hover {
-        color: #0056b3; /* Màu xanh khi hover */
+        color: #0d6efd;
     }
 
-/* Nút chính (Đăng nhập) */
 .btn {
     display: inline-block;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    font-size: 0.95rem;
+    padding: 0.5rem 1rem; /* Giảm padding */
+    border-radius: 5px; /* Giảm bo tròn */
+    font-size: 0.9rem; /* Giảm font */
+    font-weight: 500; /* Tăng độ đậm một chút */
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    border: 1px solid transparent;
+    line-height: 1.5; /* Đảm bảo chiều cao ổn định */
 }
 
 .btn-primary {
-    background-color: #007bff; /* Màu xanh dương chính */
+    background-color: #6f42c1;
     color: #ffffff;
-    border: 1px solid #007bff;
+    border-color: #6f42c1;
 }
 
     .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
+        background-color: #5a2aa0;
+        border-color: #5a2aa0;
     }
-/* ==================
-   Footer Styling
-   ================== */
 
+
+/* ===========================
+   4. Main Content Area Styling
+   =========================== */
+main {
+    padding-top: 1rem; /* Giảm padding trên */
+    padding-bottom: 1rem; /* Giảm padding dưới */
+}
+
+/* Thêm style cho tiêu đề Welcome nếu muốn */
+.welcome-title { /* Giả sử bạn thêm class này vào thẻ h1 */
+    text-align: center;
+    font-size: 2rem; /* Giảm cỡ chữ */
+    font-weight: 300; /* Làm chữ mỏng hơn */
+    margin-bottom: 0.5rem; /* Giảm khoảng cách dưới */
+    color: #495057;
+}
+
+.welcome-subtitle { /* Giả sử bạn thêm class này vào thẻ p */
+    text-align: center;
+    font-size: 1rem;
+    color: #6c757d;
+    margin-bottom: 2rem; /* Khoảng cách trước khi tới footer */
+}
+
+
+/* ===========================
+   5. Footer Styling
+   =========================== */
 .site-footer {
-    background-color: #f8f9fa; /* Màu nền xám nhạt */
-    padding: 3rem 0 1.5rem 0; /* Padding trên, dưới */
-    border-top: 1px solid #e9ecef; /* Đường viền mỏng phía trên */
-    color: #555; /* Màu chữ mặc định */
-    font-size: 0.95rem; /* Cỡ chữ cơ bản cho footer */
+    background-color: #f8f9fa;
+    padding: 2rem 0 1rem 0; /* Giảm padding */
+    border-top: 1px solid #e9ecef;
+    color: #6c757d; /* Màu chữ nhạt hơn */
+    font-size: 0.9rem; /* Giảm font size */
+    flex-shrink: 0;
 }
 
-.footer-container {
-    max-width: 1140px; /* Giới hạn chiều rộng */
-    margin: 0 auto; /* Căn giữa container */
-    padding: 0 1rem; /* Padding trái phải */
-}
+/* Không cần .footer-container riêng nếu dùng chung .container */
 
 .footer-content {
     display: flex;
-    flex-wrap: wrap; /* Cho phép xuống dòng trên màn hình nhỏ */
-    justify-content: space-between; /* Đẩy 2 cột ra xa nhau */
-    gap: 2rem; /* Khoảng cách giữa các cột nếu chúng gần nhau */
-    margin-bottom: 2rem; /* Khoảng cách với phần bản quyền */
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem; /* Giảm khoảng cách cột */
+    margin-bottom: 1.5rem; /* Giảm khoảng cách dưới */
 }
 
 .footer-column {
-    flex: 1; /* Cho phép các cột co giãn */
-    min-width: 250px; /* Chiều rộng tối thiểu trước khi xuống dòng */
+    flex: 1;
+    min-width: 220px; /* Giảm chiều rộng tối thiểu */
 }
 
     .footer-column h4 {
-        font-size: 1.1rem;
+        font-size: 1rem; /* Giảm font tiêu đề */
         font-weight: 600;
-        margin-bottom: 1rem;
-        color: #333; /* Màu tiêu đề đậm hơn */
+        margin-bottom: 0.8rem;
+        color: #495057; /* Màu tiêu đề đậm hơn một chút */
     }
 
-/* Styling cho danh sách liên hệ */
-.contact-list {
-    list-style: none;
+.contact-list,
+.about-list {
     padding: 0;
     margin: 0;
 }
 
 .contact-item {
     display: flex;
-    align-items: flex-start; /* Căn icon và text theo top nếu text dài */
-    margin-bottom: 0.8rem;
-    gap: 0.7rem; /* Khoảng cách giữa icon và text */
+    align-items: flex-start;
+    margin-bottom: 0.6rem; /* Giảm khoảng cách */
+    gap: 0.5rem; /* Giảm khoảng cách icon-text */
     line-height: 1.5;
 }
 
     .contact-item i {
-        margin-top: 0.15em; /* Điều chỉnh vị trí dọc của icon */
-        color: #777; /* Màu icon */
-        width: 18px; /* Đảm bảo các icon có chiều rộng cố định để căn chỉnh */
+        margin-top: 0.15em;
+        color: #868e96; /* Màu icon nhạt hơn */
+        width: 16px; /* Giảm nhẹ kích thước icon */
         text-align: center;
     }
 
-/* Styling cho danh sách 'Về chúng tôi' */
-.about-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.about-list li {
+    margin-bottom: 0.5rem; /* Giảm khoảng cách */
 }
 
-    .about-list li {
-        margin-bottom: 0.6rem;
+.about-list a {
+    color: #6f42c1;
+}
+
+    .about-list a:hover {
+        color: #5a2aa0;
+        text-decoration: underline;
     }
 
-    .about-list a {
-        color: #6f42c1; /* Màu tím giống trong hình */
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }
-
-        .about-list a:hover {
-            color: #5a2aa0; /* Màu đậm hơn khi hover */
-            text-decoration: underline;
-        }
-
-/* Styling cho phần bản quyền */
 .footer-bottom {
     text-align: center;
-    margin-top: 2rem; /* Khoảng cách với nội dung bên trên */
-    padding-top: 1.5rem; /* Khoảng cách với đường viền (nếu có) */
-    border-top: 1px solid #e9ecef; /* Đường viền phía trên phần bản quyền */
-    font-size: 0.85rem; /* Cỡ chữ nhỏ hơn */
-    color: #888; /* Màu chữ xám nhạt hơn */
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    font-size: 0.8rem; /* Giảm font bản quyền */
+    color: #adb5bd; /* Màu bản quyền nhạt hơn */
 }
 
-/* Responsive adjustments (Ví dụ) */
+
+/* ===========================
+   6. Responsive Adjustments
+   =========================== */
+@media (max-width: 991px) {
+    .navbar-center {
+        display: none;
+    }
+
+    .navbar-container {
+        justify-content: space-between;
+    }
+}
+
 @media (max-width: 768px) {
     .footer-content {
-        justify-content: flex-start; /* Không cần đẩy ra xa nữa khi xuống dòng */
+        justify-content: flex-start;
     }
 
     .footer-column {
-        min-width: 100%; /* Mỗi cột chiếm toàn bộ chiều rộng */
-        margin-bottom: 2rem; /* Thêm khoảng cách dưới cho cột trên */
+        min-width: 100%;
+        margin-bottom: 1.5rem; /* Giảm khoảng cách */
     }
 
         .footer-column:last-child {
             margin-bottom: 0;
         }
+
+    .navbar-right {
+        gap: 0.5rem;
+    }
+
+    .nav-link {
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ví dụ ẩn bớt link trên mobile nhỏ */
+    /* .navbar-right .nav-link:not(:last-of-type) { display: none; } */
+    .footer-column h4 {
+        font-size: 0.95rem;
+    }
+
+    .site-footer {
+        font-size: 0.85rem;
+    }
+
+    .footer-bottom {
+        font-size: 0.75rem;
+    }
 }
