@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AntTech.Models
 {
+    [Table("Article")]
     public class Article
     {
         [Key]

@@ -2,6 +2,7 @@
 
 namespace AntTech.Models
 {
+    [Table("TagInArticle")]
     public class TagInArticle
     {
         // Khóa ngoại 1 (phần của khóa chính phức hợp)

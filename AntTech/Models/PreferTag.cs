@@ -2,6 +2,7 @@
 
 namespace AntTech.Models
 {
+    [Table("PreferTag")]
     public class PreferTag
     {
         // Khóa ngoại 1 (phần của khóa chính phức hợp)

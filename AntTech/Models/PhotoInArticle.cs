@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AntTech.Models
 {
+    [Table("PhotoInArticle")]
     public class PhotoInArticle
     {
         [Key]

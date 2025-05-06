@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AntTech.Models
 {
+    [Table("Ads")]
     public class Ads
     {
         [Key]

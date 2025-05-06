@@ -2,6 +2,7 @@
 
 namespace AntTech.Models
 {
+    [Table("FollowerList")]
     public class FollowerList
     {
         // Khóa ngoại 1 (phần của khóa chính phức hợp)

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AntTech.Models
 {
+    [Table("AccountInfo")]
     public class AccountInfo
     {
         [Key] // Đánh dấu khóa chính
