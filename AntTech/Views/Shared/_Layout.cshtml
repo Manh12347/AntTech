@@ -14,40 +14,48 @@
 
     <!-- CSS tùy chỉnh của bạn (bao gồm Navbar, Footer, Sticky Footer, Site) -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <!-- Nếu bạn tách CSS navbar/footer ra file riêng, hãy thêm link ở đây -->
-    <!-- <link rel="stylesheet" href="~/css/navbar.css" asp-append-version="true" /> -->
-    <!-- <link rel="stylesheet" href="~/css/footer.css" asp-append-version="true" /> -->
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <!-- Navbar tùy chỉnh theo kiểu Spiderum -->
-        <nav class="navbar">
-            <div class="navbar-container">
-                <!-- Phần bên trái: Logo -->
-                <div class="navbar-left">
-                    <a href="/" class="navbar-logo">AntTech</a>
-                </div>
+    @{
+        // Get the current controller and action from the route data
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+        // Check if the current route is Post/Index
+        var isPostIndex = controller == "Post" && action == "Index";
+    }
 
-                <!-- Phần giữa: Các liên kết chính -->
-                <div class="navbar-center">
-                    <ul class="navbar-links">
-                        <li><a href="#" class="nav-link-styled nav-shop"><i class="fa-solid fa-store"></i> Spider's Shop</a></li>
-                        <li><a href="#" class="nav-link-styled nav-agency"><i class="fa-solid fa-globe"></i> Agency</a></li>
-                        <li><a href="#" class="nav-link-styled nav-publishing"><i class="fa-solid fa-pen-to-square"></i> Publishing</a></li>
-                    </ul>
-                </div>
+    @if (!isPostIndex)
+    {
+        <header>
+            <!-- Navbar tùy chỉnh theo kiểu Spiderum -->
+            <nav class="navbar">
+                <div class="navbar-container">
+                    <!-- Phần bên trái: Logo -->
+                    <div class="navbar-left">
+                        <a href="/" class="navbar-logo">AntTech</a>
+                    </div>
 
-                <!-- Phần bên phải -->
-                <div class="navbar-right">
-                    <button class="nav-search-btn" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    <a href="#" class="nav-link">Liên hệ</a>
-                    <a href="#" class="nav-link">Đăng ký</a>
-                    <a href="#" class="btn btn-primary">Đăng nhập</a>
+                    <!-- Phần giữa: Các liên kết chính -->
+                    <div class="navbar-center">
+                        <ul class="navbar-links">
+                            <li><a href="#" class="nav-link-styled nav-shop"><i class="fa-solid fa-store"></i> Spider's Shop</a></li>
+                            <li><a href="#" class="nav-link-styled nav-agency"><i class="fa-solid fa-globe"></i> Agency</a></li>
+                            <li><a href="/Post/Index" class="nav-link-styled nav-publishing"><i class="fa-solid fa-pen-to-square"></i> Publishing</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Phần bên phải -->
+                    <div class="navbar-right">
+                        <button class="nav-search-btn" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <a href="#" class="nav-link">Liên hệ</a>
+                        <a href="#" class="nav-link">Đăng ký</a>
+                        <a href="#" class="btn btn-primary">Đăng nhập</a>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
+            </nav>
+        </header>
+    }
 
     <!-- ===>>> WRAPPER CHO NỘI DUNG CHÍNH (Quan trọng cho Sticky Footer) <<<=== -->
     <div class="page-content-wrapper">

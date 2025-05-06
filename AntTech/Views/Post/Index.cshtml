@@ -1,0 +1,261 @@
+﻿@{
+    ViewData["Title"] = "Post Draft";
+}
+
+<header>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="/" class="navbar-logo">AntTech</a>
+            </div>
+            <div class="navbar-right">
+                <button class="btn btn-secondary back-btn" aria-label="Quay lại">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="page-content-wrapper">
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div class="editor" id="editor">
+                <input type="text" placeholder="Tiêu đề bài viết..." class="title-input" />
+
+                <div class="editor-blocks">
+                    <!-- Dynamic blocks (textarea/image/textarea...) will be inserted here -->
+                </div>
+
+                <form id="upload-form" enctype="multipart/form-data" style="display: none;">
+                    <input type="file" class="file-input" accept="image/*" name="image" />
+                </form>
+
+                <div class="buttons">
+                    <button class="btn btn-secondary save-draft">Lưu nháp</button>
+                    <button class="btn btn-primary next-step">Bước tiếp theo</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentInsertTarget = null;
+        const editorBlocks = document.querySelector('.editor-blocks');
+        const fileInput = document.querySelector('.file-input');
+        const uploadForm = document.getElementById('upload-form');
+
+        // Create a textarea block with plus icon and menu
+        function createTextareaBlock() {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'textarea-container';
+
+            const textarea = document.createElement('textarea');
+            textarea.className = 'content-input';
+            textarea.placeholder = 'Nội dung bài viết';
+
+            // Auto-resize on input
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = `${textarea.scrollHeight}px`;
+            });
+
+            const plusIcon = document.createElement('span');
+            plusIcon.className = 'plus-icon';
+            plusIcon.innerHTML = '<i class="fa-solid fa-plus"></i>';
+
+            const plusMenu = document.createElement('div');
+            plusMenu.className = 'plus-menu';
+            plusMenu.style.display = 'none';
+            plusMenu.innerHTML = `
+                <button class="plus-menu-item insert-picture">Insert Picture</button>
+                <button class="plus-menu-item insert-link">Insert Link</button>
+                <button class="plus-menu-item quote-text">Quote</button>
+                <button class="plus-menu-item bold-text">Bold</button>
+            `;
+
+            wrapper.appendChild(textarea);
+            wrapper.appendChild(plusIcon);
+            wrapper.appendChild(plusMenu);
+            editorBlocks.appendChild(wrapper);
+
+            // Position the plus icon
+            textarea.addEventListener('input', updatePlusIcon);
+            textarea.addEventListener('click', updatePlusIcon);
+            textarea.addEventListener('keyup', updatePlusIcon);
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    setTimeout(updatePlusIcon, 0);
+                }
+            });
+
+            // Toggle menu
+            plusIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const iconRect = plusIcon.getBoundingClientRect();
+                plusMenu.style.top = `${iconRect.top + window.scrollY + iconRect.height}px`;
+                plusMenu.style.left = `${iconRect.left + window.scrollX}px`;
+                currentInsertTarget = wrapper;
+                plusMenu.style.display = plusMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // Hide menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!plusIcon.contains(e.target) && !plusMenu.contains(e.target)) {
+                    plusMenu.style.display = 'none';
+                }
+            });
+
+            // Handle plus menu actions
+            plusMenu.querySelector('.insert-picture').addEventListener('click', () => {
+                fileInput.setAttribute('data-insert-after', wrapper.dataset.blockId || '');
+                fileInput.click();
+                plusMenu.style.display = 'none';
+            });
+
+            plusMenu.querySelector('.insert-link').addEventListener('click', () => {
+                insertTextAtCursor('[Link](http://example.com)', textarea);
+                plusMenu.style.display = 'none';
+            });
+
+            plusMenu.querySelector('.quote-text').addEventListener('click', () => {
+                quoteSelectedText(textarea);
+                plusMenu.style.display = 'none';
+            });
+
+            plusMenu.querySelector('.bold-text').addEventListener('click', () => {
+                wrapSelectedText('**', '**', textarea);
+                plusMenu.style.display = 'none';
+            });
+
+            // Trigger resize once
+            textarea.dispatchEvent(new Event('input'));
+            updatePlusIcon();
+
+            return wrapper;
+        }
+
+        function updatePlusIcon() {
+            document.querySelectorAll('.textarea-container').forEach(wrapper => {
+                const textarea = wrapper.querySelector('textarea');
+                const plusIcon = wrapper.querySelector('.plus-icon');
+                const cursorPos = textarea.selectionStart;
+                const lines = textarea.value.substring(0, cursorPos).split('\n');
+                const currentLine = lines[lines.length - 1];
+
+                if (currentLine.trim() === '') {
+                    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 24;
+                    const paddingTop = parseFloat(getComputedStyle(textarea).paddingTop) || 10;
+                    const topPosition = paddingTop + (lines.length - 1) * lineHeight;
+                    plusIcon.style.top = `${topPosition}px`;
+                    plusIcon.style.display = 'inline-flex';
+                } else {
+                    plusIcon.style.display = 'none';
+                }
+            });
+        }
+
+        function insertImageBlock(imageUrl, afterElement) {
+            const imageWrapper = document.createElement('div');
+            imageWrapper.className = 'image-preview-container';
+            imageWrapper.innerHTML = `
+                <div class="image-preview-header">
+                    <button class="btn btn-secondary remove-image">Remove Image</button>
+                </div>
+                <img class="image-preview" src="${imageUrl}" alt="Uploaded Image" />
+            `;
+
+            const newTextareaBlock = createTextareaBlock();
+            editorBlocks.insertBefore(imageWrapper, afterElement.nextSibling);
+            editorBlocks.insertBefore(newTextareaBlock, imageWrapper.nextSibling);
+
+            const prevTextarea = afterElement.querySelector('textarea');
+            if (prevTextarea && prevTextarea.value.trim() === '') {
+                prevTextarea.style.height = '40px';
+            }
+
+            imageWrapper.querySelector('.remove-image').addEventListener('click', () => {
+                editorBlocks.removeChild(imageWrapper);
+            });
+        }
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const afterId = fileInput.getAttribute('data-insert-after');
+
+            if (file) {
+                const formData = new FormData(uploadForm);
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    const imageUrl = data.url || URL.createObjectURL(file);
+                    const afterElement = currentInsertTarget || editorBlocks.lastChild;
+                            insertImageBlock(imageUrl, afterElement);
+                } catch (err) {
+                    console.error('Upload failed:', err);
+                    const fallbackUrl = URL.createObjectURL(file);
+                    const afterElement = currentInsertTarget || editorBlocks.lastChild;
+                    insertImageBlock(fallbackUrl, afterElement);
+                }
+            }
+            currentInsertTarget = null;
+
+            fileInput.value = '';
+        });
+
+        function insertTextAtCursor(text, textarea) {
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            textarea.value = textBefore + text + textAfter;
+            textarea.selectionStart = textarea.selectionEnd = cursorPos + text.length;
+            textarea.focus();
+            updatePlusIcon();
+        }
+
+        function wrapSelectedText(before, after, textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end);
+            const beforeText = textarea.value.substring(0, start);
+            const afterText = textarea.value.substring(end);
+            if (selected) {
+                textarea.value = beforeText + before + selected + after + afterText;
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + before.length + selected.length + after.length;
+            } else {
+                textarea.value = beforeText + before + after + afterText;
+                textarea.selectionStart = textarea.selectionEnd = start + before.length;
+            }
+            textarea.focus();
+            updatePlusIcon();
+        }
+
+        function quoteSelectedText(textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end);
+            const before = textarea.value.substring(0, start);
+            const after = textarea.value.substring(end);
+
+            if (selected) {
+                const quoted = selected.split('\n').map(line => '> ' + line).join('\n');
+                textarea.value = before + quoted + after;
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + quoted.length;
+            } else {
+                insertTextAtCursor('> ', textarea);
+            }
+            textarea.focus();
+            updatePlusIcon();
+        }
+
+        // Create initial textarea block
+        createTextareaBlock();
+    </script>
+}
