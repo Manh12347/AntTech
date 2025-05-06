@@ -1,1 +1,88 @@
-﻿
+﻿@* File: Views/Home/Index.cshtml *@
+@model HomepageViewModel 
+
+@{
+    ViewData["Title"] = Model.PageTitle; // Lấy tiêu đề từ ViewModel
+}
+
+@* Banner ảnh tĩnh (nếu có trong _Layout.cshtml thì không cần ở đây) *@
+@* <div class="banner-image-container">...</div> *@
+
+<!-- === POPULAR ARTICLES SECTION === -->
+<section class="popular-section">
+    <div class="container">
+        <h2 class="section-title">BÀI VIẾT NỔI BẬT</h2>
+
+        @* ===>>> THAY ĐỔI CÁCH TRUY CẬP DANH SÁCH <<<=== *@
+        @if (Model.PopularArticles != null && Model.PopularArticles.Any())
+        {
+            <div class="article-grid">
+                 @* ===>>> THAY ĐỔI CÁCH TRUY CẬP DANH SÁCH <<<=== *@
+                @foreach (var item in Model.PopularArticles)
+                {
+                    @* Phần HTML cho article-card giữ nguyên như trước *@
+                    <article class="article-card">
+                        <a asp-controller="Article" asp-action="Details" asp-route-id="@item.ArticleId" class="article-image-link">
+                            <img src="@item.ThumbnailUrl" alt="@item.Title">
+                        </a>
+                        <div class="article-content">
+                            <div class="article-meta-top">
+                                <div>
+                                    @if (!string.IsNullOrWhiteSpace(item.PrimaryCategory))
+                                    {
+                                        <span class="article-category">@item.PrimaryCategory.ToUpper()</span>
+                                    }
+                                    <span class="article-reading-time">• @item.ReadingTimeEstimate</span>
+                                </div>
+                                <button class="article-bookmark-btn" aria-label="Lưu bài viết">
+                                    <i class="fa-regular fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <h3 class="article-title">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@item.ArticleId">@item.Title</a>
+                            </h3>
+                            <p class="article-snippet">@item.Snippet</p>
+                            <div class="article-author-info">
+                                <a href="#" class="author-link">
+                                    <img src="@item.AuthorAvatarUrl" alt="@item.AuthorName" class="author-avatar">
+                                    <span class="author-name">@item.AuthorName</span>
+                                </a>
+                                @if (item.ViewCount.HasValue)
+                                {
+                                    <div class="article-stats">
+                                        <i class="fa-regular fa-eye"></i> @item.ViewCount
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-4">
+                <p>Hiện chưa có bài viết nào.</p>
+            </div>
+        }
+
+        @* Banner quảng cáo (tùy chọn) *@
+        @* <div class="advertisement-banner">...</div> *@
+
+    </div>
+</section>
+<!-- === END POPULAR ARTICLES SECTION === -->
+
+@* Hiển thị các section khác của trang chủ nếu có, lấy dữ liệu từ Model *@
+@* Ví dụ:
+@if(Model.FeaturedCategories != null && Model.FeaturedCategories.Any()) {
+    <section class="featured-categories">...</section>
+}
+*@
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        console.log("Trang chủ đã tải!");
+    </script>
+}
