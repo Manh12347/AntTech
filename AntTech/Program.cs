@@ -1,5 +1,9 @@
+<<<<<<< HEAD
+using Microsoft.Extensions.FileProviders;
+=======
 using Microsoft.EntityFrameworkCore; // <<< THÊM USING NÀY
 using AntTech.Models; // <<< THÊM USING NÀY (Hoặc AntTech.Data nếu DbContext ở đó)
+>>>>>>> d4872eee44a8e326a15f39245f47ef1727b85df7
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +38,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads")),
+    RequestPath = "/uploads"
+});
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
