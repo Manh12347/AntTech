@@ -1,9 +1,9 @@
-<<<<<<< HEAD
+// <<<<<<< HEAD
 using Microsoft.Extensions.FileProviders;
-=======
+// =======
 using Microsoft.EntityFrameworkCore; // <<< THÊM USING NÀY
 using AntTech.Models; // <<< THÊM USING NÀY (Hoặc AntTech.Data nếu DbContext ở đó)
->>>>>>> d4872eee44a8e326a15f39245f47ef1727b85df7
+// >>>>>>> d4872eee44a8e326a15f39245f47ef1727b85df7
 
 var builder = WebApplication.CreateBuilder(args);
 

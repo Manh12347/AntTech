@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Diagnostics;
-using System.Globalization; // Cần cho CultureInfo trong FormatDate
+using System.Globalization;
 
 // *** ĐẢM BẢO USING NÀY ĐÚNG VỚI NAMESPACE CHỨA DBCONTEXT VÀ VIEWMODEL ***
 using AntTech.Models;
@@ -167,3 +167,61 @@ namespace AntTech.Controllers
         }
     }
 }
+
+//using AntTech.Models;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.EntityFrameworkCore;
+//using System.Diagnostics;
+
+//namespace AntTech.Controllers
+//{
+//    public class HomeController : Controller
+//    {
+//        private readonly ILogger<HomeController> _logger;
+//        private readonly BlogWebsiteContext _context;
+
+//        public HomeController(ILogger<HomeController> logger, BlogWebsiteContext context)
+//        {
+//            _logger = logger;
+//            _context = context;
+//        }
+
+//        public async Task<IActionResult> Index()
+//        {
+//            var ads = await _context.Ads
+//                .Where(a => a.IsActive &&
+//                          (a.EndDate == null || a.EndDate >= DateTime.Now) &&
+//                           a.StartDate <= DateTime.Now)
+//                .ToListAsync();
+
+//            // Phân loại quảng cáo để sử dụng trong các view khác nhau
+//            ViewBag.SidebarAds = ads.Where(a => a.AdType == "sidebar").ToList();
+//            ViewBag.BannerAds = ads.Where(a => a.AdType == "banner").ToList();
+
+//            return View(ads);
+//        }
+
+//        public IActionResult Privacy()
+//        {
+//            return View();
+//        }
+
+//        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+//        public IActionResult Error()
+//        {
+//            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+//        }
+
+//        [HttpPost]
+//        public async Task<IActionResult> TrackAdClick(int adId)
+//        {
+//            var ad = await _context.Ads.FindAsync(adId);
+//            if (ad != null)
+//            {
+//                ad.ClickCount++;
+//                await _context.SaveChangesAsync();
+//            }
+//            return Ok();
+//        }
+//    }
+//}

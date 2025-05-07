@@ -18,5 +18,21 @@ namespace AntTech.Models
         public decimal? YSize { get; set; }
 
         public int ClickCount { get; set; } = 0;
+
+        // Thêm trường mới
+        public string ImageUrl { get; set; }
+
+        public string AdType { get; set; } = "sidebar"; // sidebar, banner
+
+        public bool IsActive { get; set; } = true;
+
+        public DateTime StartDate { get; set; } = DateTime.Now;
+
+        public DateTime? EndDate { get; set; }
+
+        [NotMapped]
+        public bool IsVisible => IsActive &&
+                                (EndDate == null || EndDate >= DateTime.Now) &&
+                                StartDate <= DateTime.Now;
     }
 }
