@@ -2387,4 +2387,39 @@ img.image-preview {
         font-size: 0.8rem;
     }
 }
->>>>>>> d4872eee44a8e326a15f39245f47ef1727b85df7
+> > > > > > > d4872eee44a8e326a15f39245f47ef1727b85df7
+/* Trong file site.css của bạn */
+/* ... CSS cũ của bạn ... */
+.section-spacing {
+    padding-top: 2rem;
+    padding-bottom: 2.5rem; /* Tăng khoảng cách dưới một chút */
+}
+
+.popular-articles-section.section-spacing, /* Đổi tên class section nếu cần */
+.recent-articles-section.section-spacing {
+    padding-top: 2rem;
+    border-top: 1px solid #f0f0f0; /* Thêm đường kẻ phân cách nhẹ */
+}
+
+    .popular-articles-section.section-spacing:first-of-type { /* Bỏ border-top cho section đầu tiên */
+        border-top: none;
+    }
+
+
+.section-title {
+    font-size: 1.5rem; /* Tăng nhẹ cỡ chữ */
+    font-weight: 600;
+    color: #333; /* Màu chữ rõ hơn */
+    margin-bottom: 1.8rem;
+}
+
+.section-title-left {
+    text-align: left;
+    display: block;
+    /* Thêm style trang trí nếu muốn */
+    border-left: 4px solid #6f42c1;
+    padding-left: 15px;
+    margin-left: -15px;  /* Để border nằm sát lề container */
+}
+
+/* ... (CSS cho article-grid và article-card giữ nguyên) ... */

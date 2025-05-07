@@ -1,0 +1,69 @@
+﻿@model CommentViewModel 
+
+@{
+    // Tạo returnUrl thủ công từ Path và QueryString
+    var currentReturnUrlForReply = Context.Request.Path.ToString();
+    if (Context.Request.QueryString.HasValue)
+    {
+        currentReturnUrlForReply += Context.Request.QueryString.ToString();
+    }
+}
+
+<div class="comment-item mb-3 pb-3 @(Model.ParentCommentId.HasValue ? "comment-reply ms-md-4 ps-md-3 border-start" : "border-bottom")" id="comment-@Model.CommentId">
+    <div class="comment-author d-flex align-items-start mb-2">
+        <img src="@Model.UserAvatarUrl" alt="Avatar của @Model.UserName" class="comment-author-avatar me-2" />
+        <div class="comment-author-details flex-grow-1">
+            <strong class="comment-author-name me-2">@Model.UserName</strong>
+            <small class="comment-time text-muted">@Model.CommentTimeFormatted</small>
+            <div class="comment-content mt-1">
+                @Html.Raw(Model.Content?.Replace("\n", "<br />"))
+            </div>
+            <div class="comment-actions mt-2">
+                <button class="btn btn-sm btn-link text-secondary p-0 me-2 like-comment-btn" data-comment-id="@Model.CommentId" title="Thích">
+                    <i class="fa-thumbs-up @(Model.IsLikedByCurrentUser ? "fa-solid text-primary" : "fa-regular")"></i>
+                    <span class="like-count">@Model.LikeCount</span>
+                </button>
+                @if (!Model.ParentCommentId.HasValue)
+                {
+                    <button class="btn btn-sm btn-link text-secondary p-0 reply-comment-btn" data-comment-id="@Model.CommentId" data-parent-username="@Model.UserName">
+                        <i class="fa-regular fa-comment-dots"></i> Trả lời
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.ParentCommentId.HasValue)
+    {
+        <div class="reply-form-container mt-2 ms-md-5" id="reply-form-@Model.CommentId" style="display: none;">
+            <form asp-action="AddReply" asp-controller="Comment" method="post" class="reply-form">
+                @Html.AntiForgeryToken() @* Thêm token chống CSRF *@
+                <input type="hidden" name="ArticleId" value="@ViewContext.RouteData.Values["id"]" />
+                <input type="hidden" name="ParentCommentId" value="@Model.CommentId" />
+                <div class="mb-2">
+                    <textarea name="Content" class="form-control form-control-sm" rows="2" placeholder="Trả lời @Model.UserName..." required data-val="true" data-val-required="Vui lòng nhập nội dung trả lời."></textarea>
+                    <span data-valmsg-for="Content" data-valmsg-replace="true" class="text-danger"></span>
+                </div>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <button type="submit" class="btn btn-primary btn-sm">Gửi trả lời</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm cancel-reply-btn">Hủy</button>
+                }
+                else
+                {
+                    <p><a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@currentReturnUrlForReply">Đăng nhập</a> để trả lời.</p>
+                }
+            </form>
+        </div>
+    }
+
+    @if (Model.Replies != null && Model.Replies.Any())
+    {
+        <div class="comment-replies mt-3">
+            @foreach (var reply in Model.Replies.OrderBy(r => r.CommentTime))
+            {
+                @await Html.PartialAsync("_CommentItem", reply)
+            }
+        </div>
+    }
+</div>

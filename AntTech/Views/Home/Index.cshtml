@@ -1,29 +1,28 @@
-﻿@* File: Views/Home/Index.cshtml *@
-@model HomepageViewModel 
+﻿@model HomepageViewModel
 
 @{
-    ViewData["Title"] = Model.PageTitle; // Lấy tiêu đề từ ViewModel
+    ViewData["Title"] = Model?.PageTitle ?? "Trang Chủ AntTech";
 }
 
-@* Banner ảnh tĩnh (nếu có trong _Layout.cshtml thì không cần ở đây) *@
-@* <div class="banner-image-container">...</div> *@
+@* Ảnh Slogan *@
+<div class="banner-image-container">
+    <img src="~/Images/Slogan.png" alt="Kết Nối Cảm Xúc Vươn Xa Tầm Nhìn - AntTech" class="banner-image" />
+</div>
 
-<!-- === POPULAR ARTICLES SECTION === -->
-<section class="popular-section">
+
+<!-- === PHẦN BÀI VIẾT NỔI BẬT (THEO VIEW TRONG THÁNG) === -->
+<section class="popular-articles-section section-spacing">
     <div class="container">
-        <h2 class="section-title">BÀI VIẾT NỔI BẬT</h2>
+        <h2 class="section-title section-title-left">BÀI VIẾT NỔI BẬT TRONG THÁNG</h2>
 
-        @* ===>>> THAY ĐỔI CÁCH TRUY CẬP DANH SÁCH <<<=== *@
-        @if (Model.PopularArticles != null && Model.PopularArticles.Any())
+        @if (Model?.PopularArticles != null && Model.PopularArticles.Any())
         {
             <div class="article-grid">
-                 @* ===>>> THAY ĐỔI CÁCH TRUY CẬP DANH SÁCH <<<=== *@
                 @foreach (var item in Model.PopularArticles)
                 {
-                    @* Phần HTML cho article-card giữ nguyên như trước *@
                     <article class="article-card">
                         <a asp-controller="Article" asp-action="Details" asp-route-id="@item.ArticleId" class="article-image-link">
-                            <img src="@item.ThumbnailUrl" alt="@item.Title">
+                            <img src="@item.ThumbnailUrl" alt="Ảnh bìa: @item.Title">
                         </a>
                         <div class="article-content">
                             <div class="article-meta-top">
@@ -34,7 +33,7 @@
                                     }
                                     <span class="article-reading-time">• @item.ReadingTimeEstimate</span>
                                 </div>
-                                <button class="article-bookmark-btn" aria-label="Lưu bài viết">
+                                <button class="article-bookmark-btn" aria-label="Lưu bài viết" title="Lưu bài viết">
                                     <i class="fa-regular fa-bookmark"></i>
                                 </button>
                             </div>
@@ -43,13 +42,13 @@
                             </h3>
                             <p class="article-snippet">@item.Snippet</p>
                             <div class="article-author-info">
-                                <a href="#" class="author-link">
-                                    <img src="@item.AuthorAvatarUrl" alt="@item.AuthorName" class="author-avatar">
+                                <a href="#" class="author-link" title="Xem thêm bài của @item.AuthorName">
+                                    <img src="@item.AuthorAvatarUrl" alt="Ảnh đại diện: @item.AuthorName" class="author-avatar">
                                     <span class="author-name">@item.AuthorName</span>
                                 </a>
-                                @if (item.ViewCount.HasValue)
+                                @if (item.ViewCount.HasValue && item.ViewCount > 0)
                                 {
-                                    <div class="article-stats">
+                                    <div class="article-stats" title="Lượt xem">
                                         <i class="fa-regular fa-eye"></i> @item.ViewCount
                                     </div>
                                 }
@@ -61,28 +60,72 @@
         }
         else
         {
-            <div class="text-center mt-4">
-                <p>Hiện chưa có bài viết nào.</p>
+            <div class="text-center mt-4 mb-4">
+                <p class="lead">Hiện chưa có bài viết nào nổi bật trong tháng này.</p>
             </div>
         }
-
-        @* Banner quảng cáo (tùy chọn) *@
-        @* <div class="advertisement-banner">...</div> *@
-
     </div>
 </section>
-<!-- === END POPULAR ARTICLES SECTION === -->
 
-@* Hiển thị các section khác của trang chủ nếu có, lấy dữ liệu từ Model *@
-@* Ví dụ:
-@if(Model.FeaturedCategories != null && Model.FeaturedCategories.Any()) {
-    <section class="featured-categories">...</section>
-}
-*@
+
+<!-- === PHẦN BÀI VIẾT MỚI NHẤT === -->
+<section class="recent-articles-section section-spacing">
+    <div class="container">
+        <h2 class="section-title section-title-left">BÀI VIẾT MỚI NHẤT</h2>
+
+        @if (Model?.RecentArticles != null && Model.RecentArticles.Any())
+        {
+            <div class="article-grid">
+                @foreach (var item in Model.RecentArticles)
+                {
+                    <article class="article-card">
+                        <a asp-controller="Article" asp-action="Details" asp-route-id="@item.ArticleId" class="article-image-link">
+                            <img src="@item.ThumbnailUrl" alt="Ảnh bìa: @item.Title">
+                        </a>
+                        <div class="article-content">
+                            <div class="article-meta-top">
+                                <div>
+                                    @if (!string.IsNullOrWhiteSpace(item.PrimaryCategory))
+                                    {
+                                        <span class="article-category">@item.PrimaryCategory.ToUpper()</span>
+                                    }
+                                    <span class="article-reading-time">• @item.ReadingTimeEstimate</span>
+                                </div>
+                                <button class="article-bookmark-btn" aria-label="Lưu bài viết" title="Lưu bài viết">
+                                    <i class="fa-regular fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <h3 class="article-title">
+                                <a asp-controller="Article" asp-action="Details" asp-route-id="@item.ArticleId">@item.Title</a>
+                            </h3>
+                            <p class="article-snippet">@item.Snippet</p>
+                            <div class="article-author-info">
+                                <a href="#" class="author-link" title="Xem thêm bài của @item.AuthorName">
+                                    <img src="@item.AuthorAvatarUrl" alt="Ảnh đại diện: @item.AuthorName" class="author-avatar">
+                                    <span class="author-name">@item.AuthorName</span>
+                                </a>
+                                <small class="text-muted">@item.PublishDateFormatted</small> @* Hiển thị ngày đăng *@
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-4 mb-4">
+                <p class="lead">Hiện chưa có bài viết mới nào.</p>
+            </div>
+        }
+    </div>
+</section>
+
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
-        console.log("Trang chủ đã tải!");
+        console.log("Trang chủ AntTech đã được làm mới!");
     </script>
 }

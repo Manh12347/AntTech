@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; // Cần cho ForeignKey
 
 namespace AntTech.Models
 {
@@ -7,33 +8,34 @@ namespace AntTech.Models
     public class AccountInfo
     {
         [Key] // Đánh dấu khóa chính
-        [ForeignKey("Account")] // Đánh dấu khóa ngoại, liên kết với thuộc tính Account bên dưới
+        [ForeignKey("Account")] // Khóa ngoại đến Account
         public int AccountId { get; set; }
 
         [StringLength(70)]
         public string RealName { get; set; }
 
-        public string Avatar { get; set; } // varchar(MAX) -> string
+        public string Avatar { get; set; } // varchar(MAX)
 
-        [StringLength(255)]
-        public string Email { get; set; }
+        // ===>>> THUỘC TÍNH EMAIL ĐÃ BỊ XÓA KHỎI ĐÂY <<<===
+        // Vì email giờ được quản lý bởi bảng/entity AccountEmail
 
-        public DateTime? CreatedDate { get; set; } // date -> DateTime? (cho phép null nếu cần)
+        public DateTime? CreatedDate { get; set; }
 
-        public DateTime? DoB { get; set; } // date -> DateTime?
+        public DateTime? DoB { get; set; }
 
         [StringLength(11)]
         public string PhoneNumber { get; set; }
 
-        public bool Gender { get; set; } = false; // Giá trị mặc định
+        public bool Gender { get; set; } = false; // 0 Nam, 1 Nữ
 
-        [Required] // Vì có UNIQUE constraint
+        [Required(ErrorMessage = "UserID là bắt buộc.")]
         [StringLength(20)]
+        // Không cần [Index(IsUnique=true)] nếu đã có UNIQUE trong SQL
+        // Hoặc bạn có thể cấu hình bằng Fluent API trong DbContext
         public string UserId { get; set; }
 
-        // --- Thuộc tính điều hướng ---
-
-        // Quan hệ 1-1 ngược lại với Account
+        // --- Navigation Property ---
+        // Liên kết ngược lại với Account (mối quan hệ 1-1)
         public virtual Account Account { get; set; }
     }
 }
