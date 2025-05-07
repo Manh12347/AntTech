@@ -23,9 +23,10 @@
         var action = ViewContext.RouteData.Values["action"]?.ToString();
         // Check if the current route is Post/Index
         var isPostIndex = controller == "Post" && action == "Index";
+        var isPostSave = controller == "Post" && action == "SavePost";
     }
     <!--head-->
-    @if (!isPostIndex)
+    @if (!isPostIndex&&!isPostSave)
     {
         <header>
             <!-- Navbar tùy chỉnh theo kiểu Spiderum -->

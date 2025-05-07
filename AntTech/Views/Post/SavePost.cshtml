@@ -1,0 +1,212 @@
+﻿@{
+    ViewData["Title"] = "Save Post";
+    var tags = ViewBag.Tags as List<AntTech.Models.Tag> ?? new List<AntTech.Models.Tag>();
+}
+
+<header>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="/" class="navbar-logo">AntTech</a>
+            </div>
+            <div class="navbar-right">
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="page-content-wrapper">
+    <div class="container">
+        <main role="main" class="pb-3">
+            <form id="final-post-form">
+                <div class="form-group">
+                    <label for="categorySelect">Chọn danh mục</label>
+                    <button type="button" class="btn btn-outline-primary" id="add-category">
+                        + Thêm danh mục
+                    </button>
+                    <div id="selected-tags" class="mt-2"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorInput">Thêm tác giả</label>
+                    <button type="button" class="btn btn-outline-primary" id="add-author">
+                        + Thêm tác giả
+                    </button>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-outline-secondary" id="backBtn">Quay lại</button>
+                    <button type="submit" class="btn btn-primary">Tạo</button>
+                </div>
+            </form>
+
+            <!-- Popup Modal for Tag Selection -->
+            <div class="modal" id="tagModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>Chọn danh mục</h5>
+                        <button type="button" class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Chọn</th>
+                                    <th>Tên danh mục</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tagTableBody">
+                                @foreach (var tag in tags)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" value="@tag.TagId" data-name="@tag.TagName"></td>
+                                        <td>@tag.TagName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close-modal">Đóng</button>
+                        <button type="button" class="btn btn-primary" id="confirmTags">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        text-align: right;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .tag-chip {
+        display: inline-block;
+        background-color: #e0e0e0;
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 15px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Back button functionality
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = '/Post/Index?restore=true';
+        });
+
+        // Tag selection popup functionality
+        const tagModal = document.getElementById('tagModal');
+        const addCategoryBtn = document.getElementById('add-category');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const confirmTagsBtn = document.getElementById('confirmTags');
+        const selectedTagsDiv = document.getElementById('selected-tags');
+        let selectedTags = [];
+
+        // Open modal
+        addCategoryBtn.addEventListener('click', () => {
+            // Reset checkboxes to reflect current selections
+            document.querySelectorAll('#tagTableBody input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = selectedTags.includes(parseInt(checkbox.value));
+            });
+            tagModal.style.display = 'flex';
+        });
+
+        // Close modal
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tagModal.style.display = 'none';
+            });
+        });
+
+        // Confirm tag selection
+        confirmTagsBtn.addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('#tagTableBody input[type="checkbox"]:checked');
+            selectedTags = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            const tags = Array.from(checkboxes).map(cb => cb.dataset.name);
+
+            // Update UI with selected tags
+            selectedTagsDiv.innerHTML = tags.map(tag => `<span class="tag-chip">${tag}</span>`).join('');
+            tagModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        tagModal.addEventListener('click', (e) => {
+            if (e.target === tagModal) {
+                tagModal.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('final-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saved = JSON.parse(localStorage.getItem('draftData') || '{}');
+
+            const finalPayload = {
+                ...saved,
+                categoryIds: selectedTags // Include selected tag IDs
+            };
+
+            try {
+                const response = await fetch('/Post/ConfirmSave', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalPayload)
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('draftData');
+                    alert('Bài viết đã được lưu!');
+                    window.location.href = '/';
+                } else {
+                    alert('Lỗi khi lưu bài viết!');
+                }
+            } catch (error) {
+                console.error('Save failed:', error);
+                alert('Lỗi khi lưu bài viết!');
+            }
+        });
+    </script>
+}

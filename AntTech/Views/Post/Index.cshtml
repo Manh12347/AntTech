@@ -1,6 +1,7 @@
 ﻿@{
-    ViewData["Title"] = "Post Draft";
+    ViewData["Title"] = "Tạo bài viết";
 }
+@model EditorViewModel
 
 <header>
     <nav class="navbar">
@@ -39,6 +40,70 @@
         </main>
     </div>
 </div>
+
+<style>
+    .textarea-container {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    .content-input {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        line-height: 1.5;
+        resize: none;
+    }
+
+    .plus-icon {
+        position: absolute;
+        left: -30px;
+        color: #007bff;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+
+    .plus-menu {
+        display: none;
+        position: absolute;
+        left: -30px; /* Align with the plus icon */
+        top: 100%; /* Position below the plus icon */
+        margin-top: 5px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 5px;
+        z-index: 1000;
+        white-space: nowrap;
+    }
+
+    .plus-menu-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px 10px;
+        margin-right: 5px;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .plus-menu-item:last-child {
+            margin-right: 0;
+        }
+
+        .plus-menu-item:hover {
+            background-color: #f5f5f5;
+        }
+</style>
 
 @section Scripts {
     <script>
@@ -91,12 +156,9 @@
                 }
             });
 
-            // Toggle menu
+            // Toggle menu (positioning handled by CSS)
             plusIcon.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const iconRect = plusIcon.getBoundingClientRect();
-                plusMenu.style.top = `${iconRect.top + window.scrollY + iconRect.height}px`;
-                plusMenu.style.left = `${iconRect.left + window.scrollX}px`;
                 currentInsertTarget = wrapper;
                 plusMenu.style.display = plusMenu.style.display === 'block' ? 'none' : 'block';
             });
@@ -195,7 +257,7 @@
                     const data = await response.json();
                     const imageUrl = data.url || URL.createObjectURL(file);
                     const afterElement = currentInsertTarget || editorBlocks.lastChild;
-                            insertImageBlock(imageUrl, afterElement);
+                    insertImageBlock(imageUrl, afterElement);
                 } catch (err) {
                     console.error('Upload failed:', err);
                     const fallbackUrl = URL.createObjectURL(file);
@@ -257,5 +319,69 @@
 
         // Create initial textarea block
         createTextareaBlock();
+
+        // Back button functionality
+        document.querySelector('.back-btn').addEventListener('click', () => {
+            window.location.href = "/";
+        });
+
+        // Save draft and navigate to SavePost
+        document.querySelector('.next-step').addEventListener('click', async () => {
+            const title = document.querySelector('.title-input').value;
+            let content = '';
+            const imageUrls = [];
+
+            document.querySelectorAll('.editor-blocks > div').forEach(block => {
+                if (block.classList.contains('textarea-container')) {
+                    const textarea = block.querySelector('textarea');
+                    content += textarea.value + '\n';
+                } else if (block.classList.contains('image-preview-container')) {
+                    const img = block.querySelector('img');
+                    content += `![Image](${img.src})\n`;
+                    imageUrls.push(img.src);
+                }
+            });
+
+            // Save draft to localStorage before navigating
+            const draftData = { title, content, imageUrls };
+            localStorage.setItem('draftData', JSON.stringify(draftData));
+
+            window.location.href = '/Post/SavePost';
+        });
+
+        // Restore draft on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shouldRestore = urlParams.get('restore') === 'true';
+            const draft = JSON.parse(localStorage.getItem('draftData') || '{}');
+
+            if (shouldRestore && draft.title) {
+                document.querySelector('.title-input').value = draft.title;
+
+                // Clear existing blocks
+                editorBlocks.innerHTML = '';
+
+                // Split content by lines and rebuild blocks
+                const blocks = draft.content.split('\n').filter(line => line.trim() !== '');
+                blocks.forEach(line => {
+                    if (line.trim().startsWith('![Image]')) {
+                        const match = line.match(/!\[Image\]\((.*?)\)/);
+                        if (match) {
+                            const url = match[1];
+                            const lastBlock = editorBlocks.lastChild || createTextareaBlock();
+                            insertImageBlock(url, lastBlock);
+                        }
+                    } else {
+                        const block = createTextareaBlock();
+                        block.querySelector('textarea').value = line;
+                    }
+                });
+
+                // Ensure at least one textarea block exists
+                if (!editorBlocks.querySelector('.textarea-container')) {
+                    createTextareaBlock();
+                }
+            }
+        });
     </script>
 }

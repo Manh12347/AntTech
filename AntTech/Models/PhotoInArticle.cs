@@ -12,8 +12,8 @@ namespace AntTech.Models
         // Khóa ngoại
         [ForeignKey("Article")]
         public int ArticleId { get; set; }
-
         public string Photo { get; set; } // varchar(MAX) -> string
+        public int Position { get; set; }
 
         // --- Thuộc tính điều hướng ---
         public virtual Article Article { get; set; }
