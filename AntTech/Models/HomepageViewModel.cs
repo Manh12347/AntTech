@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
+using AntTech.Models; // Đảm bảo namespace ArticlePreviewViewModel là đúng
 
-namespace AntTech.Models // Hoặc AntTech.ViewModels
+namespace AntTech.Models
 {
     public class HomepageViewModel
     {
-        public string PageTitle { get; set; } = "Trang Chủ"; // Tiêu đề trang (ví dụ)
-        public List<ArticlePreviewViewModel> PopularArticles { get; set; } = new List<ArticlePreviewViewModel>(); // Danh sách bài viết nổi bật
+        public string PageTitle { get; set; } = "Trang Chủ";
+        public List<ArticlePreviewViewModel> PopularArticles { get; set; } = new List<ArticlePreviewViewModel>(); // Bài viết nổi bật (view cao trong tháng)
+        public List<ArticlePreviewViewModel> RecentArticles { get; set; } = new List<ArticlePreviewViewModel>();  // Bài viết mới nhất
 
-        // Thêm các thuộc tính khác nếu trang chủ cần hiển thị thêm dữ liệu
-        // public List<CategoryViewModel> FeaturedCategories { get; set; }
-        // public BannerViewModel MainBanner { get; set; }
+        // Thêm các thuộc tính khác nếu cần
     }
 }

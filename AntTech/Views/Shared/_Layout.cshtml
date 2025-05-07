@@ -54,9 +54,6 @@
                     </div>
             </nav>
         </header>
-        <div class="banner-image-container">
-            <img src="~/Images/Slogan.png" alt="Kết Nối Cảm Xúc Vươn Xa Tầm Nhìn" class="banner-image" />
-        </div>
     }
     <!-- === KẾT THÚC ẢNH BANNER === -->
     <!-- ===>>> WRAPPER CHO NỘI DUNG CHÍNH (Quan trọng cho Sticky Footer) <<<=== -->
@@ -100,6 +97,35 @@
         </div>
     </footer>
     <!-- KẾT THÚC FOOTER -->
+    <!-- === MODAL ĐĂNG NHẬP === -->
+    <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            @* modal-dialog-centered để căn giữa *@
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginPromptModalLabel">Vui lòng đăng nhập</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn cần đăng nhập để thực hiện hành động này.</p>
+                    @* Render Partial View chứa form đăng nhập *@
+                    @* Giả sử bạn có LoginViewModel cho Partial View *@
+                    @await Html.PartialAsync("~/Views/Account/_LoginQuickFormPartial.cshtml", new LoginViewModel(), new ViewDataDictionary(ViewData) { { "ReturnUrl", Context.Request.Path + Context.Request.QueryString } })
+                    <hr>
+                    <p class="text-center small mb-0">
+                        Chưa có tài khoản?
+                        <a asp-controller="Account" asp-action="Register" asp-route-returnurl="@(Context.Request.Path + Context.Request.QueryString)">Đăng ký ngay</a>
+                    </p>
+                </div>
+                @*
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+                *@
+            </div>
+        </div>
+    </div>
+    <!-- === KẾT THÚC MODAL ĐĂNG NHẬP === -->
     <!-- === SCRIPTS === -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> --> <!-- Bỏ comment nếu dùng Bootstrap JS -->

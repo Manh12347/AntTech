@@ -1,0 +1,38 @@
+﻿@model LoginViewModel
+
+@{
+    Layout = null;
+    // Lấy returnUrl từ ViewData vì PartialView này được gọi từ nhiều nơi
+    var returnUrlFromViewData = ViewData["ReturnUrl"]?.ToString() ?? Context.Request.Path + Context.Request.QueryString;
+}
+
+<div class="quick-login-form-modal-content">
+    @* Có thể thêm class để style riêng nếu cần *@
+    <form asp-action="Login" asp-controller="Account" asp-route-returnurl="@returnUrlFromViewData" method="post" id="quickLoginFormInsideModal">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+        <div class="mb-2">
+            <label asp-for="Email" class="form-label sr-only">Email hoặc Tên đăng nhập</label>
+            <input asp-for="Email" class="form-control form-control-sm" placeholder="Email hoặc Tên đăng nhập" required />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-2">
+            <label asp-for="Password" class="form-label sr-only">Mật khẩu</label>
+            <input asp-for="Password" type="password" class="form-control form-control-sm" placeholder="Mật khẩu" required />
+            <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <div class="mb-2 form-check">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label small">
+                @Html.DisplayNameFor(m => m.RememberMe)
+            </label>
+        </div>
+        <div class="d-grid">
+            @* d-grid để nút chiếm full width *@
+            <button type="submit" class="btn btn-primary btn-sm">Đăng nhập</button>
+        </div>
+        <p class="text-center small mt-2 mb-0">
+            <a asp-action="ForgotPassword" asp-controller="Account" class="small">Quên mật khẩu?</a>
+        </p>
+    </form>
+</div>

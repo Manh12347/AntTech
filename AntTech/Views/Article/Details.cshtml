@@ -1,0 +1,213 @@
+﻿@model ArticleDetailViewModel
+
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model?.Title) ? "Chi tiết Bài viết" : Model.Title;
+    // currentReturnUrl cho các link redirect trực tiếp (không phải cho modal)
+    var currentReturnUrl = Context.Request.Path.ToString();
+    if (Context.Request.QueryString.HasValue)
+    {
+        currentReturnUrl += Context.Request.QueryString.ToString();
+    }
+}
+
+<div class="article-detail-container container mt-4 mb-5">
+    @if (Model != null)
+    {
+        <!-- TIÊU ĐỀ, TÁC GIẢ, META -->
+        <h1 class="article-detail-title">@Model.Title</h1>
+        <div class="article-detail-meta mb-3">
+            <div class="author-section">
+                <a href="@Model.AuthorProfileUrl" title="Xem trang của @Model.AuthorName" class="text-decoration-none">
+                    <img src="@Model.AuthorAvatarUrl" alt="Ảnh đại diện của @Model.AuthorName" class="author-avatar-large" />
+                </a>
+                <div class="author-meta-text">
+                    <a href="@Model.AuthorProfileUrl" class="author-name-detail text-decoration-none">@Model.AuthorName</a>
+                    <span class="publish-date-detail">@Model.PublishDateFormatted • @Model.ReadingTimeEstimate</span>
+                </div>
+            </div>
+            <div class="article-stats-detail">
+                @if (Model.ViewCount > 0)
+                {
+                    <span title="Lượt xem"><i class="fa-regular fa-eye"></i> @Model.ViewCount</span>
+                }
+                <span title="Lượt thích bài viết" class="article-like-action action-requires-auth" data-article-id="@Model.ArticleId">
+                    <i class="fa-thumbs-up @(Model.IsArticleLikedByCurrentUser ? "fa-solid text-primary" : "fa-regular")"></i>
+                    <span class="article-like-count">@Model.LikeCount</span>
+                </span>
+                <button class="btn btn-sm btn-link text-secondary p-0 ms-2 article-bookmark-action action-requires-auth" title="Lưu bài viết" data-article-id="@Model.ArticleId">
+                    <i class="fa-regular fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ẢNH TRONG BÀI -->
+        @if (Model.PhotoUrls != null && Model.PhotoUrls.Any()) { /* ... Hiển thị ảnh ... */ }
+
+        <!-- NỘI DUNG BÀI VIẾT -->
+        <article class="article-detail-content">@Html.Raw(Model.Content)</article>
+
+        <!-- TAGS -->
+        @if (Model.Tags != null && Model.Tags.Any()) { /* ... Hiển thị tags ... */ }
+
+        <!-- PHẦN BÌNH LUẬN -->
+        <div class="article-comments-section mt-5 pt-4 border-top">
+            @{
+                int totalCommentsAndReplies = Model.Comments?.Sum(c => 1 + (c.Replies?.Count ?? 0)) ?? 0;
+            }
+            <h3 class="comments-title mb-4">Bình luận (@totalCommentsAndReplies)</h3>
+
+            <div class="add-comment-form mb-5">
+                <form asp-action="AddComment" asp-controller="Comment" method="post" id="addRootCommentForm" class="requires-auth-form">
+                    @* Đánh dấu form cần auth *@
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ArticleId" value="@Model.ArticleId" />
+                    <div class="mb-3">
+                        <textarea name="Content" class="form-control" rows="3" placeholder="Viết bình luận của bạn..." required data-val="true" data-val-required="Vui lòng nhập nội dung bình luận."></textarea>
+                        <span data-valmsg-for="Content" data-valmsg-replace="true" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Gửi bình luận</button>
+                </form>
+            </div>
+
+            @if (Model.Comments != null && Model.Comments.Any())
+            {
+                <div class="comment-list">
+                    @foreach (var comment in Model.Comments)
+                    {
+                        @await Html.PartialAsync("~/Views/Shared/_CommentItem.cshtml", comment, new ViewDataDictionary(ViewData) { { "ArticleIdForReply", Model.ArticleId }, { "CurrentPageReturnUrl", currentReturnUrl } })
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Chưa có bình luận nào...</p>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-center lead">Không tìm thấy bài viết.</p>
+    }
+</div>
+
+@section Styles {
+    @* CSS cho trang chi tiết và bình luận (copy từ phản hồi trước vào đây hoặc site.css) *@
+    <style>
+        /* Dán CSS đã cung cấp ở lần trước cho .article-detail-container, .comments-section, .comment-item, etc. vào đây */
+        /* Hoặc tốt hơn là đặt chúng trong file site.css chung */
+        .article-detail-container {
+            max-width: 850px;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+        /* ... (Thêm CSS khác từ lần trước) ... */
+        .action-requires-auth {
+            cursor: pointer;
+        }
+        /* Để cho các nút like/bookmark có cursor pointer */
+
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isAuthenticated = @(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false");
+            const loginModalElement = document.getElementById('loginPromptModal');
+            let loginModalInstance = null;
+            if (loginModalElement) {
+                loginModalInstance = new bootstrap.Modal(loginModalElement);
+            }
+
+            function handleAuthRequiredAction(event) {
+                if (!isAuthenticated) {
+                    event.preventDefault(); // Ngăn submit/click mặc định
+                    event.stopImmediatePropagation(); // Ngăn các event listener khác trên cùng element (quan trọng cho form)
+                    if (loginModalInstance) {
+                        // Cập nhật returnUrl cho modal
+                        const modalBody = loginModalElement.querySelector('.modal-body');
+                        if (modalBody) {
+                            const existingReturnUrl = '@currentReturnUrl'; // Lấy returnUrl hiện tại của trang
+                            // Tìm các link/form bên trong modal và cập nhật returnUrl của chúng nếu cần
+                            // Ví dụ, nếu PartialView _LoginQuickFormPartial dùng một input ẩn tên ReturnUrl
+                            const modalFormReturnUrlInput = modalBody.querySelector('form input[name="ReturnUrl"]');
+                            if (modalFormReturnUrlInput) {
+                                modalFormReturnUrlInput.value = existingReturnUrl;
+                            }
+                            const modalRegisterLink = modalBody.querySelector('a[asp-action="Register"]');
+                            if (modalRegisterLink) {
+                                modalRegisterLink.href = `/Account/Register?returnUrl=${encodeURIComponent(existingReturnUrl)}`;
+                            }
+                        }
+                        loginModalInstance.show();
+                    } else {
+                        console.error("Modal đăng nhập không được tìm thấy. Chuyển hướng...");
+                        window.location.href = '@Url.Action("Login", "Account", new { returnUrl = currentReturnUrl })';
+                    }
+                    return false; // Báo hiệu hành động bị chặn
+                }
+                return true; // Cho phép hành động
+            }
+
+            // Áp dụng cho các form cần đăng nhập
+            document.querySelectorAll('form.requires-auth-form').forEach(form => {
+                form.addEventListener('submit', handleAuthRequiredAction);
+            });
+
+            // Áp dụng cho các nút/link cần đăng nhập (ví dụ: like, bookmark)
+            document.querySelectorAll('.action-requires-auth').forEach(element => {
+                element.addEventListener('click', handleAuthRequiredAction);
+            });
+
+            // --- JavaScript cho Reply Button và Like Button (tương tự như trước) ---
+
+            // Xử lý nút Trả lời
+            document.querySelectorAll('.reply-comment-btn').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    // Logic requireLogin đã được xử lý bởi class .action-requires-auth nếu bạn thêm vào nút reply
+                    // Nếu không, bạn cần gọi requireLoginAndShowModal(event) ở đây trước
+                    if (!isAuthenticated) {
+                        // Nếu bạn không thêm class 'action-requires-auth' vào nút reply,
+                        // thì cần gọi handleAuthRequiredAction(event) ở đây
+                        handleAuthRequiredAction(event);
+                        return; // Dừng lại nếu chưa đăng nhập và modal được hiện
+                    }
+
+                    // Logic hiện/ẩn form reply nếu đã đăng nhập
+                    const commentId = this.dataset.commentId;
+                    const replyFormContainer = document.getElementById('reply-form-' + commentId);
+                    if (replyFormContainer) {
+                        document.querySelectorAll('.reply-form-container').forEach(rc => {
+                            if (rc.id !== replyFormContainer.id) rc.style.display = 'none';
+                        });
+                        replyFormContainer.style.display = replyFormContainer.style.display === 'none' ? 'block' : 'none';
+                        if (replyFormContainer.style.display === 'block') {
+                            replyFormContainer.querySelector('textarea').focus();
+                        }
+                    }
+                });
+            });
+
+            // Xử lý nút Hủy Trả lời (giữ nguyên)
+            document.querySelectorAll('.cancel-reply-btn').forEach(button => { /* ... */ });
+
+            // Xử lý nút Like Comment (AJAX) (logic AJAX như trước, đã có kiểm tra auth)
+            document.querySelectorAll('.like-comment-btn.action-requires-auth').forEach(button => { // Chỉ áp dụng cho nút like đã được đánh dấu
+                button.addEventListener('click', function (event) {
+                    // Hàm handleAuthRequiredAction đã chạy và nếu trả về false, event này sẽ không tới đây
+                    // Nếu đến đây nghĩa là đã đăng nhập hoặc không có handleAuthRequiredAction trên nút này
+                    if (!isAuthenticated) return; // Chặn thêm 1 lần nữa cho chắc
+
+                    // ... (Toàn bộ logic fetch AJAX của bạn cho nút Like comment giữ nguyên ở đây) ...
+                    const commentId = this.dataset.commentId;
+                    // ...
+                });
+            });
+        });
+    </script>
+}

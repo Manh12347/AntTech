@@ -5,16 +5,14 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Diagnostics;
-using System.Globalization;
-
-// *** ĐẢM BẢO USING NÀY ĐÚNG VỚI NAMESPACE CHỨA DBCONTEXT VÀ VIEWMODEL ***
-using AntTech.Models;
+using System.Globalization; // Không còn cần trực tiếp ở đây nếu FormatDate đã là static và có using riêng
+using AntTech.Models;      // Đảm bảo namespace chứa DbContext và ViewModels là đúng
+// using AntTech.Data;     // Bỏ comment nếu DbContext ở đây
 
 namespace AntTech.Controllers
 {
     public class HomeController : Controller
     {
-        // *** Đảm bảo tên class DbContext này đúng: BlogWebsiteDbContext ***
         private readonly BlogWebsiteDbContext _context;
 
         public HomeController(BlogWebsiteDbContext context)
@@ -22,118 +20,154 @@ namespace AntTech.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // *** ACTION INDEX ***
         public async Task<IActionResult> Index()
         {
-            var viewModel = new HomepageViewModel(); // Tạo ViewModel cho trang chủ
+            var viewModel = new HomepageViewModel();
 
             try
             {
-                Console.WriteLine("[LOG] HomeController.Index: Bắt đầu gọi GetPopularArticles...");
+                Console.WriteLine("[LOG] HomeController.Index: Bắt đầu lấy dữ liệu...");
 
-                viewModel.PopularArticles = await GetPopularArticles(4); // Lấy 4 bài viết
+                // Lấy 4 bài viết nổi bật (view cao nhất TRONG THÁNG)
+                viewModel.PopularArticles = await GetPopularArticlesByViewCountInCurrentMonth(4);
+                Console.WriteLine($"[LOG] HomeController.Index: GetPopularArticlesByViewCountInCurrentMonth trả về {viewModel.PopularArticles?.Count ?? -1} bài viết.");
 
-                Console.WriteLine($"[LOG] HomeController.Index: GetPopularArticles trả về {viewModel.PopularArticles?.Count ?? -1} bài viết (null nếu -1).");
+                // Lấy 4 bài viết mới nhất
+                viewModel.RecentArticles = await GetRecentArticles(4);
+                Console.WriteLine($"[LOG] HomeController.Index: GetRecentArticles trả về {viewModel.RecentArticles?.Count ?? -1} bài viết.");
 
-                // Lấy thêm dữ liệu khác cho trang chủ nếu cần
-                // viewModel.PageTitle = "Chào mừng đến AntTech";
+                viewModel.PageTitle = "Trang Chủ AntTech";
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"!!!!!!!!!!!!!!!!! LỖI TRONG HomeController.Index !!!!!!!!!!!!!!!!!");
                 Console.WriteLine(ex.ToString());
-                Console.WriteLine($"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                // viewModel.PopularArticles đã được khởi tạo là list rỗng
+                viewModel.PopularArticles = viewModel.PopularArticles ?? new List<ArticlePreviewViewModel>();
+                viewModel.RecentArticles = viewModel.RecentArticles ?? new List<ArticlePreviewViewModel>();
+                // Consider returning a proper error view
                 // return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
             }
-
-            return View(viewModel); // Truyền HomepageViewModel tới View
+            return View(viewModel);
         }
 
-        // *** HÀM LẤY DỮ LIỆU ***
-        private async Task<List<ArticlePreviewViewModel>> GetPopularArticles(int count)
+        // HÀM LẤY BÀI VIẾT NỔI BẬT THEO VIEW COUNT TRONG THÁNG HIỆN TẠI
+        private async Task<List<ArticlePreviewViewModel>> GetPopularArticlesByViewCountInCurrentMonth(int count)
         {
-            Console.WriteLine($"[LOG] GetPopularArticles: Bắt đầu truy vấn {count} bài viết...");
-
-            if (_context?.Articles == null) // Kiểm tra cả context và DbSet
+            Console.WriteLine($"[LOG] GetPopularArticlesByViewCountInCurrentMonth: Bắt đầu truy vấn {count} bài viết có view cao nhất TRONG THÁNG...");
+            if (_context?.Articles == null)
             {
-                Console.WriteLine("[ERROR] GetPopularArticles: _context hoặc _context.Articles bị NULL!");
+                Console.WriteLine("[ERROR] GetPopularArticlesByViewCountInCurrentMonth: _context hoặc _context.Articles bị NULL!");
                 return new List<ArticlePreviewViewModel>();
             }
 
-            List<ArticlePreviewViewModel> viewModels = null;
+            DateTime now = DateTime.Now;
+            DateTime firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            DateTime firstDayOfNextMonth = firstDayOfMonth.AddMonths(1);
 
+            List<ArticlePreviewViewModel> viewModels;
             try
             {
-                // Truy vấn và map trực tiếp sang ViewModel
                 viewModels = await _context.Articles
                     .AsNoTracking()
-                    .Where(a => a.StatusSet == "P") // Điều kiện StatusSet
-                    .OrderByDescending(a => a.PublishDate)
+                    .Where(a => a.StatusSet == "P" &&
+                                a.PublishDate >= firstDayOfMonth && // Lọc trong tháng hiện tại
+                                a.PublishDate < firstDayOfNextMonth)
+                    .OrderByDescending(a => a.ViewCount)
+                    .ThenByDescending(a => a.PublishDate)
                     .Take(count)
-                    .Select(a => new ArticlePreviewViewModel
-                    {
-                        ArticleId = a.ArticleId,
-                        Title = a.Title ?? "Không có tiêu đề",
-                        Snippet = (a.Content ?? "").Length > 100 ? (a.Content ?? "").Substring(0, 100).Trim() + "..." : (a.Content ?? ""),
-                        ThumbnailUrl = a.Photos.Select(p => p.Photo).FirstOrDefault(),
-                        PrimaryCategory = a.ArticleTags.Select(at => at.Tag.TagName).FirstOrDefault(),
-                        // ===>>> GỌI HÀM STATIC <<<===
-                        ReadingTimeEstimate = CalculateReadingTime(a.Content),
-                        AuthorName = a.Authors.Select(ath => ath.Account.AccountInfo.RealName).FirstOrDefault() ?? a.Authors.Select(ath => ath.Account.Username).FirstOrDefault(),
-                        AuthorAvatarUrl = a.Authors.Select(ath => ath.Account.AccountInfo.Avatar).FirstOrDefault(),
-                        ViewCount = a.ViewCount > 0 ? a.ViewCount : (int?)null,
-                        PublishDate = a.PublishDate,
-                        // ===>>> GỌI HÀM STATIC <<<===
-                        PublishDateFormatted = FormatDate(a.PublishDate)
-                    })
+                    .Select(MapArticleToPreviewViewModel()) // Sử dụng Expression
                     .ToListAsync();
-
-                Console.WriteLine($"[LOG] GetPopularArticles: Truy vấn DB và Select trả về {viewModels?.Count ?? -1} ViewModels.");
-
+                Console.WriteLine($"[LOG] GetPopularArticlesByViewCountInCurrentMonth: Truy vấn trả về {viewModels?.Count ?? -1} ViewModels.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"!!!!!!!!!!!!!!!!! LỖI TRONG GetPopularArticles KHI TRUY VẤN/SELECT !!!!!!!!!!!!!!!!!");
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine($"LỖI KHI LẤY POPULAR ARTICLES TRONG THÁNG: {ex.ToString()}");
+                return new List<ArticlePreviewViewModel>();
+            }
+            return ProcessArticlePreviews(viewModels);
+        }
+
+        // HÀM LẤY BÀI VIẾT GẦN ĐÂY NHẤT
+        private async Task<List<ArticlePreviewViewModel>> GetRecentArticles(int count)
+        {
+            Console.WriteLine($"[LOG] GetRecentArticles: Bắt đầu truy vấn {count} bài viết mới nhất...");
+            if (_context?.Articles == null)
+            {
+                Console.WriteLine("[ERROR] GetRecentArticles: _context hoặc _context.Articles bị NULL!");
                 return new List<ArticlePreviewViewModel>();
             }
 
-            // Xử lý hậu kỳ
-            if (viewModels != null)
+            List<ArticlePreviewViewModel> viewModels;
+            try
             {
-                Console.WriteLine($"[LOG] GetPopularArticles: Bắt đầu xử lý hậu kỳ cho {viewModels.Count} ViewModels...");
-                foreach (var article in viewModels)
+                viewModels = await _context.Articles
+                    .AsNoTracking()
+                    .Where(a => a.StatusSet == "P")
+                    .OrderByDescending(a => a.PublishDate)
+                    .Take(count)
+                    .Select(MapArticleToPreviewViewModel()) // Sử dụng lại Expression
+                    .ToListAsync();
+                Console.WriteLine($"[LOG] GetRecentArticles: Truy vấn trả về {viewModels?.Count ?? -1} ViewModels.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"LỖI KHI LẤY RECENT ARTICLES: {ex.ToString()}");
+                return new List<ArticlePreviewViewModel>();
+            }
+            return ProcessArticlePreviews(viewModels);
+        }
+
+
+        // EXPRESSION ĐỂ TÁI SỬ DỤNG LOGIC SELECT (ánh xạ từ Article sang ArticlePreviewViewModel)
+        private static System.Linq.Expressions.Expression<Func<Article, ArticlePreviewViewModel>> MapArticleToPreviewViewModel()
+        {
+            return a => new ArticlePreviewViewModel
+            {
+                ArticleId = a.ArticleId,
+                Title = a.Title ?? "Không có tiêu đề",
+                Snippet = (a.Content ?? "").Length > 100 ? (a.Content ?? "").Substring(0, 100).Trim() + "..." : (a.Content ?? ""),
+                ThumbnailUrl = a.Photos.Select(p => p.Photo).FirstOrDefault(),
+                PrimaryCategory = a.ArticleTags.Select(at => at.Tag.TagName).FirstOrDefault(),
+                ReadingTimeEstimate = CalculateReadingTime(a.Content), // Gọi hàm static
+                AuthorName = a.Authors.Select(ath => ath.Account.AccountInfo.RealName).FirstOrDefault() ?? a.Authors.Select(ath => ath.Account.Username).FirstOrDefault(),
+                AuthorAvatarUrl = a.Authors.Select(ath => ath.Account.AccountInfo.Avatar).FirstOrDefault(),
+                ViewCount = a.ViewCount > 0 ? a.ViewCount : (int?)null,
+                PublishDate = a.PublishDate,
+                PublishDateFormatted = FormatDate(a.PublishDate) // Gọi hàm static
+            };
+        }
+
+        // HÀM RIÊNG CHO XỬ LÝ HẬU KỲ VIEWMODELS (gán ảnh mặc định, etc.)
+        private List<ArticlePreviewViewModel> ProcessArticlePreviews(List<ArticlePreviewViewModel> viewModels)
+        {
+            if (viewModels == null) return new List<ArticlePreviewViewModel>();
+
+            // Console.WriteLine($"[LOG] ProcessArticlePreviews: Bắt đầu xử lý hậu kỳ cho {viewModels.Count} ViewModels..."); // Có thể bật lại nếu cần debug sâu
+            foreach (var article in viewModels)
+            {
+                if (string.IsNullOrWhiteSpace(article.ThumbnailUrl))
                 {
-                    if (string.IsNullOrWhiteSpace(article.ThumbnailUrl))
-                    {
-                        article.ThumbnailUrl = "/images/placeholder-article.png";
-                    }
-                    if (string.IsNullOrWhiteSpace(article.AuthorAvatarUrl))
-                    {
-                        article.AuthorAvatarUrl = "/images/default-avatar.png";
-                    }
-                    if (string.IsNullOrWhiteSpace(article.PrimaryCategory))
-                    {
-                        article.PrimaryCategory = "Chưa phân loại";
-                    }
-                    if (string.IsNullOrWhiteSpace(article.AuthorName))
-                    {
-                        article.AuthorName = "Ẩn danh";
-                    }
+                    article.ThumbnailUrl = "/images/placeholder-article.png";
                 }
-                Console.WriteLine($"[LOG] GetPopularArticles: Hoàn thành xử lý hậu kỳ.");
+                if (string.IsNullOrWhiteSpace(article.AuthorAvatarUrl))
+                {
+                    article.AuthorAvatarUrl = "/images/default-avatar.png";
+                }
+                if (string.IsNullOrWhiteSpace(article.PrimaryCategory))
+                {
+                    article.PrimaryCategory = "Chưa phân loại";
+                }
+                if (string.IsNullOrWhiteSpace(article.AuthorName))
+                {
+                    article.AuthorName = "Ẩn danh";
+                }
             }
-            else
-            {
-                Console.WriteLine("[WARN] GetPopularArticles: viewModels bị null sau truy vấn!");
-                viewModels = new List<ArticlePreviewViewModel>();
-            }
+            // Console.WriteLine($"[LOG] ProcessArticlePreviews: Hoàn thành xử lý hậu kỳ.");
             return viewModels;
         }
 
-        // *** HÀM TIỆN ÍCH STATIC ***
-        // ===>>> THÊM static <<<===
+
+        // HÀM TIỆN ÍCH STATIC
         private static string CalculateReadingTime(string content)
         {
             if (string.IsNullOrWhiteSpace(content)) return "1 phút đọc";
@@ -143,15 +177,10 @@ namespace AntTech.Controllers
             return readingTimeMinutes <= 1 ? "1 phút đọc" : $"{readingTimeMinutes} phút đọc";
         }
 
-        // ===>>> THÊM static <<<===
-        private static string FormatDate(DateTime? date)
+        private static string FormatDate(DateTime? date) // Sử dụng System.Globalization trong using nếu định dạng phức tạp hơn
         {
-            // Định dạng ngắn gọn (ví dụ: 06/05/2024)
             return date?.ToString("dd/MM/yyyy") ?? string.Empty;
         }
-
-        // Có thể tạo thêm hàm static FormatDateLong nếu cần ở chỗ khác
-        // private static string FormatDateLong(DateTime? date) { ... }
 
         // Action Error
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -167,61 +196,3 @@ namespace AntTech.Controllers
         }
     }
 }
-
-//using AntTech.Models;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
-//using System.Diagnostics;
-
-//namespace AntTech.Controllers
-//{
-//    public class HomeController : Controller
-//    {
-//        private readonly ILogger<HomeController> _logger;
-//        private readonly BlogWebsiteContext _context;
-
-//        public HomeController(ILogger<HomeController> logger, BlogWebsiteContext context)
-//        {
-//            _logger = logger;
-//            _context = context;
-//        }
-
-//        public async Task<IActionResult> Index()
-//        {
-//            var ads = await _context.Ads
-//                .Where(a => a.IsActive &&
-//                          (a.EndDate == null || a.EndDate >= DateTime.Now) &&
-//                           a.StartDate <= DateTime.Now)
-//                .ToListAsync();
-
-//            // Phân loại quảng cáo để sử dụng trong các view khác nhau
-//            ViewBag.SidebarAds = ads.Where(a => a.AdType == "sidebar").ToList();
-//            ViewBag.BannerAds = ads.Where(a => a.AdType == "banner").ToList();
-
-//            return View(ads);
-//        }
-
-//        public IActionResult Privacy()
-//        {
-//            return View();
-//        }
-
-//        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-//        public IActionResult Error()
-//        {
-//            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-//        }
-
-//        [HttpPost]
-//        public async Task<IActionResult> TrackAdClick(int adId)
-//        {
-//            var ad = await _context.Ads.FindAsync(adId);
-//            if (ad != null)
-//            {
-//                ad.ClickCount++;
-//                await _context.SaveChangesAsync();
-//            }
-//            return Ok();
-//        }
-//    }
-//}
