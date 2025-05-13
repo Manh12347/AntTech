@@ -1,23 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations; // Cần cho các Data Annotations
 
-namespace AntTech.Models // Hoặc namespace chứa ViewModel của bạn
+namespace AntTech.Models // Hoặc AntTech.ViewModels
 {
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Vui lòng nhập Email hoặc Tên đăng nhập.")]
         [Display(Name = "Email hoặc Tên đăng nhập")]
-        public string Email { get; set; } // Có thể là Email hoặc Username tùy bạn thiết kế logic đăng nhập
+        // Bạn có thể dùng [EmailAddress] nếu chỉ cho phép đăng nhập bằng Email,
+        // hoặc bỏ qua nếu cho phép cả Username.
+        public string EmailOrUsername { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
-        [DataType(DataType.Password)]
+        [DataType(DataType.Password)] // Giúp trình duyệt hiển thị dưới dạng input password
         [Display(Name = "Mật khẩu")]
         public string Password { get; set; }
 
         [Display(Name = "Ghi nhớ đăng nhập?")]
         public bool RememberMe { get; set; }
 
-        // Thuộc tính ReturnUrl này thường được xử lý bởi Controller khi redirect,
-        // nhưng bạn có thể thêm vào đây nếu Partial View cần nó một cách tường minh
-        // public string ReturnUrl { get; set; }
+        public string ReturnUrl { get; set; }
     }
 }

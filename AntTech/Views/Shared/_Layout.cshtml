@@ -1,137 +1,367 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AntTech</title>
 
-    <!-- === CSS LINKS === -->
-    <!-- Bootstrap (Nếu bạn dùng) -->
-    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
-
-    <!-- Font Awesome CDN (Cho Icons) -->
+    <!-- Bootstrap CSS (Vẫn cần cho các style chung và grid) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- CSS tùy chỉnh của bạn (bao gồm Navbar, Footer, Sticky Footer, Site) -->
+    <!-- CSS tùy chỉnh -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     @await RenderSectionAsync("Styles", required: false)
+
+    @* CSS CHO CÁC PANEL AJAX - Bạn nên chuyển vào site.css *@
+    <style>
+        .ajax-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1050; /* Đảm bảo cao hơn các phần tử khác */
+            display: none; /* Ẩn ban đầu */
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease-in-out, visibility 0s linear 0.25s;
+        }
+
+        .ajax-panel-overlay.show {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        .ajax-panel-content {
+            position: relative;
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            width: 400px;
+            max-width: 90%;
+            transform: translateY(-20px) scale(0.95);
+            transition: transform 0.25s ease-out, opacity 0.2s ease-in-out;
+            opacity: 0; /* Ẩn ban đầu để có hiệu ứng đẹp hơn khi show */
+        }
+
+        .ajax-panel-overlay.show .ajax-panel-content {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .ajax-panel-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.3rem 0.6rem;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: #888;
+        }
+        .ajax-panel-close-btn:hover {
+            color: #333;
+        }
+
+        .login-title-ajax {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        /* Logout confirm panel specific */
+        .logout-confirm-panel-content {
+             text-align: center;
+        }
+        .logout-confirm-panel-content h5 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .logout-confirm-buttons {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-evenly; /* Hoặc space-around */
+        }
+         .logout-confirm-buttons .btn {
+             min-width: 100px;
+         }
+    </style>
 </head>
 <body>
     @{
-        // Get the current controller and action from the route data
         var controller = ViewContext.RouteData.Values["controller"]?.ToString();
         var action = ViewContext.RouteData.Values["action"]?.ToString();
-        // Check if the current route is Post/Index
-        var isPostIndex = controller == "Post" && action == "Index";
-        var isPostSave = controller == "Post" && action == "SavePost";
+        var isPostPage = controller == "Post" && (action == "Index" || action == "SavePost" || action == "Create"); // Mở rộng điều kiện nếu cần
     }
-    <!--head-->
-    @if (!isPostIndex&&!isPostSave)
+
+    @if (!isPostPage) // Chỉ hiển thị header nếu KHÔNG phải các trang Post đặc biệt
     {
         <header>
-            <!-- Navbar tùy chỉnh theo kiểu Spiderum -->
             <nav class="navbar">
                 <div class="navbar-container">
-                    <!-- Phần bên trái: Logo -->
                     <div class="navbar-left">
-                        <a href="/" class="navbar-logo">AntTech</a>
+                        <a asp-controller="Home" asp-action="Index" class="navbar-logo">AntTech</a>
                     </div>
-
-                    <!-- Phần giữa: Các liên kết chính -->
                     <div class="navbar-center">
                         <ul class="navbar-links">
                             <li><a href="#" class="nav-link-styled nav-shop"><i class="fa-solid fa-store"></i> Ant's Shop</a></li>
                             <li><a href="#" class="nav-link-styled nav-agency"><i class="fa-solid fa-globe"></i> Agency</a></li>
-                            <li><a href="/Post/Index" class="nav-link-styled nav-publishing"><i class="fa-solid fa-pen-to-square"></i> Publishing</a></li>
+                            <li><a asp-controller="Post" asp-action="Index" class="nav-link-styled nav-publishing"><i class="fa-solid fa-pen-to-square"></i> Publishing</a></li>
                         </ul>
                     </div>
-
-                    <!-- Phần bên phải -->
                     <div class="navbar-right">
                         <button class="nav-search-btn" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
                         <a href="#" class="nav-link">Liên hệ</a>
-                        <a href="#" class="nav-link">Đăng ký</a>
-                        <a href="#" class="btn btn-primary">Đăng nhập</a>
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <span class="nav-link text-dark" style="cursor:default;">
+                                Chào, @(User.FindFirstValue(ClaimTypes.Name) ?? User.Identity.Name)!
+                            </span>
+                            <button type="button" id="navbarLogoutButton" class="btn btn-link nav-link text-dark p-0 ms-2" style="border:none; background:none; cursor:pointer; vertical-align: baseline;">
+                                Đăng xuất
+                            </button>
+                        }
+                        else
+                        {
+                            {
+                                var registerReturnUrlNavbar = Context.Request.Path.ToString();
+                                if (Context.Request.QueryString.HasValue)
+                                {
+                                    registerReturnUrlNavbar += Context.Request.QueryString.ToString();
+                                }
+                            }
+                           // <a asp-controller="Account" asp-action="Register" asp-route-returnurl="@registerReturnUrlNavbar" class="nav-link">Đăng ký</a>
+                            <button type="button" id="navbarLoginButton" class="btn btn-primary">
+                                Đăng nhập
+                            </button>
+                        }
                     </div>
+                </div>
             </nav>
         </header>
     }
-    <!-- === KẾT THÚC ẢNH BANNER === -->
-    <!-- ===>>> WRAPPER CHO NỘI DUNG CHÍNH (Quan trọng cho Sticky Footer) <<<=== -->
+
     <div class="page-content-wrapper">
-        <!-- Container chứa nội dung chính (có thể thay đổi class hoặc bỏ nếu layout khác) -->
-        <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
-    </div> <!-- ===>>> KẾT THÚC WRAPPER <<<=== -->
-    <!-- FOOTER -->
+        @if (controller == "Home" && action == "Index" && !isPostPage)
+        {
+            <div class="banner-image-container">
+                <img src="~/Images/Slogan.png" alt="Kết Nối Cảm Xúc Vươn Xa Tầm Nhìn - AntTech" class="banner-image" />
+            </div>
+        }
+        @RenderBody()
+    </div>
+
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-content">
-                <!-- Cột Thông tin liên hệ -->
                 <div class="footer-column footer-contact">
                     <h4>Thông tin liên hệ</h4>
                     <ul class="contact-list">
-                        <li class="contact-item"><i class="fa-solid fa-phone"></i><span>Hotline: 0123 456 789</span></li>
-                        <li class="contact-item"><i class="fa-solid fa-envelope"></i><span>Email: siuers@siu.edu.vn</span></li>
-                        <li class="contact-item"><i class="fa-solid fa-location-dot"></i><span>Địa chỉ: 8C Tống Hữu Định, P. Thảo Điền, Q.2, TP.HCM</span></li>
+                        <li><i class="fa-solid fa-phone"></i><span>Hotline: 0123 456 789</span></li>
+                        <li><i class="fa-solid fa-envelope"></i><span>Email: contact@anttech.example</span></li>
+                        <li><i class="fa-solid fa-location-dot"></i><span>Địa chỉ: 123 AntTech, TP. Công Nghệ</span></li>
                     </ul>
                 </div>
-
-                <!-- Cột Về chúng tôi -->
                 <div class="footer-column footer-about">
                     <h4>Về chúng tôi</h4>
                     <ul class="about-list">
-                        <li><a href="/gioi-thieu">Giới thiệu</a></li>
-                        <li><a href="/dieu-khoan">Điều khoản sử dụng</a></li>
-                        <li><a href="/chinh-sach-bao-mat">Chính sách bảo mật</a></li>
+                        <li><a asp-controller="Home" asp-action="About">Giới thiệu</a></li>
+                        <li><a asp-controller="Home" asp-action="Terms">Điều khoản sử dụng</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Chính sách bảo mật</a></li>
                     </ul>
                 </div>
             </div>
-
-            <!-- Phần bản quyền -->
             <div class="footer-bottom">
                 <p>© @DateTime.Now.Year Bản quyền thuộc về AntTech.</p>
             </div>
         </div>
     </footer>
-    <!-- KẾT THÚC FOOTER -->
-    <!-- === MODAL ĐĂNG NHẬP === -->
-    <div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            @* modal-dialog-centered để căn giữa *@
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="loginPromptModalLabel">Vui lòng đăng nhập</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Bạn cần đăng nhập để thực hiện hành động này.</p>
-                    @* Render Partial View chứa form đăng nhập *@
-                    @* Giả sử bạn có LoginViewModel cho Partial View *@
-                    @await Html.PartialAsync("~/Views/Account/_LoginQuickFormPartial.cshtml", new LoginViewModel(), new ViewDataDictionary(ViewData) { { "ReturnUrl", Context.Request.Path + Context.Request.QueryString } })
-                    <hr>
-                    <p class="text-center small mb-0">
-                        Chưa có tài khoản?
-                        <a asp-controller="Account" asp-action="Register" asp-route-returnurl="@(Context.Request.Path + Context.Request.QueryString)">Đăng ký ngay</a>
-                    </p>
-                </div>
-                @*
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                </div>
-                *@
+
+    @* === HTML CHO CÁC PANEL AJAX (Đăng nhập và Đăng xuất) === *@
+    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+    {
+        <div id="ajaxLoginPanel" class="ajax-panel-overlay">
+            <div class="ajax-panel-content login-panel"> @* Thêm class login-panel *@
+                <button type="button" class="btn-close ajax-panel-close-btn" aria-label="Close"></button>
+                <h2 class="login-title-ajax">Đăng nhập</h2>
+                @{
+                    var panelLoginReturnUrl = Context.Request.Path.ToString();
+                    if (Context.Request.QueryString.HasValue)
+                    {
+                        panelLoginReturnUrl += Context.Request.QueryString.ToString();
+                    }
+                }
+                <form id="ajaxLoginForm" method="post" action="@Url.Action("Login", "Account", new { returnUrl = panelLoginReturnUrl })" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div id="ajaxLoginErrorSummary" class="alert alert-danger my-2" role="alert" style="display: none; font-size: 0.9rem; padding: .5rem .75rem;"></div>
+                    <div class="form-group mb-3">
+                        <label for="ajaxLoginEmailOrUsername" class="form-label">Email hoặc Tên đăng nhập</label>
+                        <input type="text" name="EmailOrUsername" class="form-control form-control-sm" id="ajaxLoginEmailOrUsername" required autocomplete="username">
+                        <span class="text-danger d-block mt-1 small" data-valmsg-for="EmailOrUsername"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="ajaxLoginPassword" class="form-label">Mật khẩu</label>
+                        <input type="password" name="Password" class="form-control form-control-sm" id="ajaxLoginPassword" required autocomplete="current-password">
+                        <span class="text-danger d-block mt-1 small" data-valmsg-for="Password"></span>
+                    </div>
+                    <div class="login-options d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="ajaxLoginRememberMe" name="RememberMe" value="true">
+                            <input type="hidden" value="false" name="RememberMe" />
+                            <label class="form-check-label small" for="ajaxLoginRememberMe">Ghi nhớ tôi</label>
+                        </div>
+                        <a href="@Url.Action("ForgotPassword", "Account")" class="forgot-password-link small">Quên mật khẩu?</a>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" id="ajaxLoginSubmitBtn" class="btn btn-primary btn-sm">
+                            <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                        </button>
+                    </div>
+                    <div class="register-prompt text-center mt-3 small">
+                        Chưa có tài khoản? <a href="@Url.Action("Register", "Account", new { returnUrl = panelLoginReturnUrl })" class="register-link fw-bold">Đăng ký</a>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-    <!-- === KẾT THÚC MODAL ĐĂNG NHẬP === -->
-    <!-- === SCRIPTS === -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> --> <!-- Bỏ comment nếu dùng Bootstrap JS -->
+    }
+    else // Nếu đã đăng nhập
+    {
+        <div id="ajaxLogoutConfirmPanel" class="ajax-panel-overlay">
+            <div class="ajax-panel-content logout-confirm-panel-content"> @* Thêm class logout-confirm-panel-content *@
+                <button type="button" class="btn-close ajax-panel-close-btn" aria-label="Close"></button>
+                <h5>Xác nhận Đăng xuất</h5>
+                <p>Bạn có chắc chắn muốn đăng xuất?</p>
+                <div class="logout-confirm-buttons">
+                    <form asp-controller="Account" asp-action="Logout" method="post" id="actualLogoutForm" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        @{
+                             var logoutReturnUrl = Context.Request.Path.ToString();
+                             if(Context.Request.QueryString.HasValue) { logoutReturnUrl += Context.Request.QueryString.ToString(); }
+                        }
+                        <input type="hidden" name="returnUrl" value="@logoutReturnUrl" />
+                        <button type="submit" id="ajaxConfirmLogoutBtn" class="btn btn-danger btn-sm">Xác nhận</button>
+                    </form>
+                    <button id="ajaxCancelLogoutBtn" class="btn btn-secondary btn-sm">Hủy</button>
+                </div>
+            </div>
+        </div>
+    }
+    @* === KẾT THÚC CÁC PANEL AJAX === *@
+
+
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    @* === SCRIPT CHO PANEL AJAX === *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginPanelOverlay = document.getElementById('ajaxLoginPanel');
+            const logoutConfirmOverlay = document.getElementById('ajaxLogoutConfirmPanel');
+
+            const navbarLoginButton = document.getElementById('navbarLoginButton');
+            const navbarLogoutButton = document.getElementById('navbarLogoutButton');
+
+            const loginPanelCloseButton = loginPanelOverlay ? loginPanelOverlay.querySelector('.ajax-panel-close-btn') : null;
+            const cancelLogoutButton = logoutConfirmOverlay ? logoutConfirmOverlay.querySelector('#ajaxCancelLogoutBtn') : null;
+            // Nút submit form logout (#ajaxConfirmLogoutBtn) sẽ tự submit form khi được click
+
+            function showOverlay(overlayElement) {
+                if (overlayElement) {
+                    overlayElement.style.display = 'flex';
+                    setTimeout(() => { // Cho phép trình duyệt render display:flex trước khi bắt đầu transition
+                        overlayElement.classList.add('show');
+                        const firstInput = overlayElement.querySelector('input[type="text"], input[type="email"], input[type="password"]');
+                        if(firstInput) firstInput.focus();
+                    }, 10);
+                }
+            }
+
+            function hideOverlay(overlayElement) {
+                if (overlayElement) {
+                    overlayElement.classList.remove('show');
+                    overlayElement.addEventListener('transitionend', function handler(e) {
+                        // Chỉ ẩn display nếu transition là của opacity và target là chính overlay
+                        if (e.propertyName === 'opacity' && e.target === overlayElement) {
+                             if (!overlayElement.classList.contains('show')) { // Kiểm tra lại để tránh lỗi nếu show lại nhanh
+                                overlayElement.style.display = 'none';
+                            }
+                            overlayElement.removeEventListener('transitionend', handler);
+                        }
+                    }, { once: true }); // Tự động xóa event listener sau khi chạy một lần
+                }
+            }
+
+            if (navbarLoginButton && loginPanelOverlay) {
+                navbarLoginButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    showOverlay(loginPanelOverlay);
+                });
+            }
+
+            if (navbarLogoutButton && logoutConfirmOverlay) {
+                navbarLogoutButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    showOverlay(logoutConfirmOverlay);
+                });
+            }
+
+            if (loginPanelCloseButton && loginPanelOverlay) {
+                loginPanelCloseButton.addEventListener('click', function () {
+                    hideOverlay(loginPanelOverlay);
+                });
+            }
+
+            if (cancelLogoutButton && logoutConfirmOverlay) {
+                cancelLogoutButton.addEventListener('click', function () {
+                    hideOverlay(logoutConfirmOverlay);
+                });
+            }
+
+            // Đóng panel khi click ra ngoài overlay (tùy chọn)
+            [loginPanelOverlay, logoutConfirmOverlay].forEach(overlay => {
+                if (overlay) {
+                    overlay.addEventListener('click', function(event) {
+                        if (event.target === overlay) {
+                            hideOverlay(overlay);
+                        }
+                    });
+                }
+            });
+
+            // Xử lý submit form login bằng AJAX (nếu muốn, hiện tại đang submit thường)
+            const ajaxLoginForm = document.getElementById('ajaxLoginForm');
+            if(ajaxLoginForm){
+                ajaxLoginForm.addEventListener('submit', function(event){
+                     event.preventDefault(); // Bỏ comment dòng này nếu muốn xử lý AJAX
+                     console.log('Form login sẽ submit bình thường. Để xử lý AJAX, hãy bỏ comment preventDefault.');
+                    // Logic AJAX submit ở đây...
+                    // Ví dụ:
+                     const formData = new FormData(this);
+                     fetch(this.action, { method: 'POST', body: formData, headers: {'X-Requested-With': 'XMLHttpRequest'} })
+                     .then(response => response.json()) // Giả sử server trả về JSON
+                     .then(data => {
+                         if(data.success) { window.location.href = data.redirectUrl || '/'; }
+                         else { document.getElementById('ajaxLoginErrorSummary').textContent = data.message; document.getElementById('ajaxLoginErrorSummary').style.display = 'block';}
+                     })
+                     .catch(error => { console.error('Login AJAX error:', error); document.getElementById('ajaxLoginErrorSummary').textContent = 'Lỗi kết nối.'; document.getElementById('ajaxLoginErrorSummary').style.display = 'block';});
+                });
+            }
+
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false) @* Section cho các script riêng của từng trang *@
 </body>
 </html>
