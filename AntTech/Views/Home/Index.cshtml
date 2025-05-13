@@ -4,7 +4,26 @@
     ViewData["Title"] = Model?.PageTitle ?? "Trang Chủ AntTech";
 }
 
-@* Ảnh Slogan *@
+@* Container cho quảng cáo chạy ngang *@
+<div class="scrolling-ad-container">
+    <div class="scrolling-ad" id="scrollingAd">
+        @if (Model?.BannerAd != null && !string.IsNullOrEmpty(Model.BannerAd.ImageUrl))
+        {
+            <a href="@Model.BannerAd.Link" target="_blank" onclick="recordAdClick(@Model.BannerAd.AdsId)" class="ad-item">
+                <img src="@Model.BannerAd.ImageUrl" alt="Quảng cáo" />
+                <span>@Model.BannerAd</span>
+            </a>
+        }
+        else
+        {
+            <div class="ad-item">
+                <span>Liên hệ để đặt quảng cáo tại đây</span>
+            </div>
+        }
+    </div>
+</div>
+
+@* Ảnh Slogan với Quảng Cáo *@
 <div class="banner-image-container">
     <img src="~/Images/Slogan.png" alt="Kết Nối Cảm Xúc Vươn Xa Tầm Nhìn - AntTech" class="banner-image" />
 </div>
@@ -67,6 +86,109 @@
     </div>
 </section>
 
+<!-- === PHẦN VIDEO NỔI BẬT === -->
+<section class="video-section section-spacing">
+    <div class="container">
+        <h2 class="section-title section-title-left">Video Nổi Bật</h2>
+        
+        <div class="video-grid">
+            <!-- Video Item 1 -->
+            <div class="video-item">
+                <div class="video-thumbnail-container">
+                    <img src="/images/video-thumbnail-1.jpg" alt="" class="video-thumbnail">
+                    <div class="video-play-button" data-video-id="UFTtvzus7rI">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div class="video-duration">05:23</div>
+                </div>
+                <h3 class="video-title">Stablecoin: Từ đồng đô la mã hóa đến nền móng cho hệ thống tài chính phi tập trung</h3>
+                <div class="video-meta">
+                    <div class="video-author">
+                        <img src="/images/avatar-spiderum.png" alt="AntTech" class="author-avatar">
+                        <span class="author-name">AntTech</span>
+                    </div>
+                    <div class="video-views">3 lượt xem</div>
+                </div>
+            </div>
+            
+            <!-- Video Item 2 -->
+            <div class="video-item">
+                <div class="video-thumbnail-container">
+                    <img src="/images/video-thumbnail-2.jpg" alt="" class="video-thumbnail">
+                    <div class="video-play-button" data-video-id="dQw4w9WgXcQ">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div class="video-duration">08:15</div>
+                </div>
+                <h3 class="video-title">Để ngăn chặn Trung Quốc, trật tự thế giới mới đã được Mỹ đã thiết lập ra sao?</h3>
+                <div class="video-meta">
+                    <div class="video-author">
+                        <img src="/images/avatar-spiderum.png" alt="AntTech" class="author-avatar">
+                        <span class="author-name">AntTech</span>
+                    </div>
+                    <div class="video-views">5 lượt xem</div>
+                </div>
+            </div>
+            
+            <!-- Video Item 3 -->
+            <div class="video-item">
+                <div class="video-thumbnail-container">
+                    <img src="/images/video-thumbnail-3.jpg" alt="" class="video-thumbnail">
+                    <div class="video-play-button" data-video-id="jNQXAC9IVRw">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div class="video-duration">12:30</div>
+                </div>
+                <h3 class="video-title">Học được gì từ bấy nhiêu năm sống trên đời? | GS.Phan Văn Trường</h3>
+                <div class="video-meta">
+                    <div class="video-author">
+                        <img src="/images/avatar-spiderum.png" alt="AntTech" class="author-avatar">
+                        <span class="author-name">AntTech</span>
+                    </div>
+                    <div class="video-views">7 lượt xem</div>
+                </div>
+            </div>
+            
+            <!-- Video Item 4 -->
+            <div class="video-item">
+                <div class="video-thumbnail-container">
+                    <img src="/images/video-thumbnail-4.jpg" alt="" class="video-thumbnail">
+                    <div class="video-play-button" data-video-id="9bZkp7q19f0">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div class="video-duration">07:45</div>
+                </div>
+                <h3 class="video-title">Lược sử về sự thống trị thế giới của... GIÁ VỊ | WikiVi | Thế giới</h3>
+                <div class="video-meta">
+                    <div class="video-author">
+                        <img src="/images/avatar-spiderum.png" alt="AntTech" class="author-avatar">
+                        <span class="author-name">AntTech</span>
+                    </div>
+                    <div class="video-views">6 lượt xem</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popup Video -->
+<div id="videoPopup" class="video-popup">
+  <div class="video-popup-content">
+    <div class="video-popup-header">
+      <div class="channel-info">
+        <img src="/images/avatar-spiderum.png" class="channel-avatar" alt="Spiderum">
+                <h4 class="channel-name">AntTech</h4>
+      </div>
+      <button class="close-popup">&times;</button>
+    </div>
+    <div class="video-container">
+      <iframe id="youtubeIframe" width="100%" height="200" src="" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="video-title" id="popupVideoTitle">
+      Để ngăn chặn Trung Quốc, trật tự thế giới mới đã được Mỹ đã thiết lập ra sao?
+    </div>
+  </div>
+</div>
 
 <!-- === PHẦN BÀI VIẾT MỚI NHẤT === -->
 <section class="recent-articles-section section-spacing">
@@ -121,11 +243,140 @@
 </section>
 
 
+@section Styles {
+    <style>
+        /* CSS cho phần video nổi bật */
+        .featured-video-section {
+            margin: 40px 0;
+        }
+        
+        .featured-video-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Tỷ lệ 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .featured-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            padding: 15px 0;
+        }
+        
+        .video-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .video-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .related-video-articles {
+            margin-top: 20px;
+        }
+        
+        .related-articles-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .related-article-item {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .related-article-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .related-article-thumb {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .related-article-title {
+            display: block;
+            padding: 10px;
+            font-weight: 500;
+            color: #333;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
     <script>
-        console.log("Trang chủ AntTech đã được làm mới!");
+        // Mảng chứa các quảng cáo
+        const ads = [
+            { text: "Khám phá các bài viết mới nhất về công nghệ", link: "https://24hstore.vn/upload_images/images/2019/11/14/anh-gif-1-min.gif" },
+            { text: "Tham gia cộng đồng AntTech ngay hôm nay", link: "https://24hstore.vn/upload_images/images/2019/11/14/anh-gif-2-min.gif" },
+            { text: "Liên hệ với chúng tôi để đặt quảng cáo", link: "https://spiderum.com/bai-dang/Stablecoin-Tu-dong-do-la-ma-hoa-den-nen-mong-cho-he-thong-tai-chinh-moi-H6xrMionfJs4" }
+        ];
+        
+        // Hàm để thay đổi quảng cáo
+        function changeAd() {
+            const scrollingAd = document.getElementById('scrollingAd');
+            if (!scrollingAd) return;
+            
+            // Lấy quảng cáo ngẫu nhiên từ mảng
+            const randomIndex = Math.floor(Math.random() * ads.length);
+            const ad = ads[randomIndex];
+            
+            // Tạo HTML cho quảng cáo
+            scrollingAd.innerHTML = `
+                <a href="${ad.link}" class="ad-item">
+                    <span>${ad.text}</span>
+                </a>
+            `;
+            
+            // Nếu có quảng cáo từ Model, thêm vào
+            @if (Model?.BannerAd != null && !string.IsNullOrEmpty(Model.BannerAd.ImageUrl))
+            {
+                <text>
+                scrollingAd.innerHTML += `
+                    <a href="@Model.BannerAd.Link" target="_blank" onclick="recordAdClick(@Model.BannerAd.AdsId)" class="ad-item">
+                        <img src="@Model.BannerAd.ImageUrl" alt="Quảng cáo" />
+                        <span>@Model.BannerAd</span>
+                    </a>
+                `;
+                </text>
+            }
+        }
+        
+        // Thay đổi quảng cáo mỗi giây
+        setInterval(changeAd, 1000);
+        
+        // Ghi nhận lượt click quảng cáo
+        function recordAdClick(adId) {
+            fetch(`/api/ads/click/${adId}`, {
+                method: 'POST'
+            }).then(response => {
+                console.log('Ad click recorded');
+            }).catch(error => {
+                console.error('Error recording ad click:', error);
+            });
+        }
+
     </script>
 }

@@ -400,7 +400,7 @@ main {
         font-size: 0.75rem;
     }
 }
-<<<<<<< HEAD
+
 /* Existing CSS remains unchanged */
 
 /* Add or update this section */
@@ -1916,7 +1916,7 @@ img.image-preview {
     max-width: 100%;
     border-radius: 6px;
 }
-=======
+
 /* ===========================
    Slogan Banner Styling
    =========================== */
@@ -2144,20 +2144,325 @@ img.image-preview {
    Banner Image Styling
    =========================== */
 
+   .scrolling-ad-container {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    overflow: hidden;
+    background-color: #8dbff0;
+    border-bottom: 1px solid #8dbff0;
+    color: #495057;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
 .banner-image-container {
-    line-height: 0; /* Giúp loại bỏ khoảng trống thừa dưới ảnh */
-    /* Optional: Thêm khoảng cách dưới ảnh nếu muốn tách biệt với nội dung */
-    /* margin-bottom: 1rem; */
+    position: relative;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    padding-top: 40px; /* Thêm padding phía trên để dành chỗ cho quảng cáo */
 }
 
 .banner-image {
-    display: block; /* Đảm bảo ảnh chiếm một dòng riêng */
-    width: 100%; /* Cho ảnh rộng bằng 100% phần tử chứa nó */
-    height: auto; /* Giữ đúng tỷ lệ khung hình của ảnh */
-    object-fit: cover; /* Tùy chọn: Nếu muốn ảnh cắt để vừa khung chứa (nếu đặt chiều cao cố định) */
-    /* Optional: Đặt chiều cao tối đa nếu ảnh quá cao */
-    /* max-height: 250px; */
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
 }
+
+.scrolling-ad {
+    display: flex;
+    position: absolute;
+    white-space: nowrap;
+    animation: scrollAd 15s linear infinite;
+    width: 100%;
+}
+
+.scrolling-ad-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0 15px;
+    transition: background-color 0.3s ease;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.scrolling-ad-content::before {
+    content: "📢";
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.ad-item {
+    display: inline-flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 0 20px;
+    font-weight: bold;
+}
+
+.ad-item img {
+    height: 30px;
+    margin-right: 10px;
+}
+
+@keyframes scrollAd {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* Tạm dừng animation khi hover */
+.scrolling-ad-content:hover {
+    background-color: #e9ecef;
+}
+
+.main-container {
+    padding-top: 50px;
+}
+
+/* === Video Section Styles === */
+.video-section {
+    margin: 2rem 0;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .video-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.video-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-thumbnail-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    aspect-ratio: 16/9;
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.video-thumbnail-container:hover .video-thumbnail {
+    transform: scale(1.05);
+}
+
+.video-play-button {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.video-thumbnail-container:hover .video-play-button {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.video-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.video-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.video-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.video-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.video-views {
+    font-size: 12px;
+}
+
+/* === Video Popup Styles === */
+.video-popup {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.video-popup-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.video-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.channel-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.channel-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.channel-name {
+    margin: 0;
+    font-size: 14px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.close-popup {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.close-popup:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.video-container {
+    width: 100%;
+    position: relative;
+    padding-bottom: 56.25%; /* Tỷ lệ 16:9 */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-popup .video-title {
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #212529;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* Hiệu ứng hiển thị */
+.video-popup.show {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===========================
    Popular Articles Section
    =========================== */
@@ -2387,7 +2692,7 @@ img.image-preview {
         font-size: 0.8rem;
     }
 }
-> > > > > > > d4872eee44a8e326a15f39245f47ef1727b85df7
+
 /* Trong file site.css của bạn */
 /* ... CSS cũ của bạn ... */
 .section-spacing {

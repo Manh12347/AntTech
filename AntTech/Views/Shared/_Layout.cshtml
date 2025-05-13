@@ -25,6 +25,14 @@
         var isPostIndex = controller == "Post" && action == "Index";
         var isPostSave = controller == "Post" && action == "SavePost";
     }
+    
+    <!-- Đặt quảng cáo ở đây, ngay đầu body -->
+    <div class="scrolling-ad-container">
+        <div class="scrolling-ad-content">
+            Khám phá các bài viết mới nhất về công nghệ tại AntTech!
+        </div>
+    </div>
+    
     <!--head-->
     @if (!isPostIndex&&!isPostSave)
     {
@@ -131,6 +139,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> --> <!-- Bỏ comment nếu dùng Bootstrap JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/ad-animation.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
