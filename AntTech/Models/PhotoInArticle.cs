@@ -13,7 +13,7 @@ namespace AntTech.Models
         [ForeignKey("Article")]
         public int ArticleId { get; set; }
         public string Photo { get; set; } // varchar(MAX) -> string
-        public int Position { get; set; }
+        public int positsion { get; set; }
 
         // --- Thuộc tính điều hướng ---
         public virtual Article Article { get; set; }

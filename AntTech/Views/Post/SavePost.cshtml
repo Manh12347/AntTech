@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Save Post";
+    ViewData["Title"] = "Lưu bài viết";
     var tags = ViewBag.Tags as List<AntTech.Models.Tag> ?? new List<AntTech.Models.Tag>();
 }
 
@@ -10,6 +10,9 @@
                 <a href="/" class="navbar-logo">AntTech</a>
             </div>
             <div class="navbar-right">
+                <button class="btn btn-secondary back-btn" aria-label="Quay lại">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </button>
             </div>
         </div>
     </nav>
@@ -19,28 +22,41 @@
     <div class="container">
         <main role="main" class="pb-3">
             <form id="final-post-form">
-                <div class="form-group">
-                    <label for="categorySelect">Chọn danh mục</label>
-                    <button type="button" class="btn btn-outline-primary" id="add-category">
-                        + Thêm danh mục
-                    </button>
-                    <div id="selected-tags" class="mt-2"></div>
-                </div>
+                <div class="save-post-container">
+                    <h1 class="save-post-title">Xem trước và Lưu bài viết</h1>
 
-                <div class="form-group">
-                    <label for="authorInput">Thêm tác giả</label>
-                    <button type="button" class="btn btn-outline-primary" id="add-author">
-                        + Thêm tác giả
-                    </button>
-                </div>
+                    <div class="post-preview">
+                        <h2 id="preview-title" class="preview-title"></h2>
+                        <div id="preview-content" class="preview-content"></div>
+                    </div>
 
-                <div class="form-buttons">
-                    <button type="button" class="btn btn-outline-secondary" id="backBtn">Quay lại</button>
-                    <button type="submit" class="btn btn-primary">Tạo</button>
+                    <div class="cover-image-section mt-4">
+                        <label for="cover-image-input" class="form-label">Ảnh bìa (tùy chọn):</label>
+                        <input type="file" id="cover-image-input" class="form-control" accept="image/*" />
+                        <div id="cover-image-preview" class="cover-image-preview mt-2" style="display: none;">
+                            <img id="cover-image" src="" alt="Ảnh bìa" style="max-width: 100%; border-radius: 4px;" />
+                            <button class="btn btn-secondary remove-cover-image mt-2" type="button">Xóa ảnh bìa</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-4">
+                        <label>Chọn danh mục</label>
+                        <button type="button" class="btn btn-outline-primary" id="add-category">+ Thêm danh mục</button>
+                        <div id="selected-tags" class="mt-2"></div>
+                    </div>
+
+                    <div class="form-group mt-4">
+                        <label>Thêm tác giả</label>
+                        <button type="button" class="btn btn-outline-primary" id="add-author">+ Thêm tác giả</button>
+                    </div>
+
+                    <div class="form-buttons mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">Tạo</button>
+                    </div>
                 </div>
             </form>
 
-            <!-- Popup Modal for Tag Selection -->
+            <!-- Modal for selecting tags -->
             <div class="modal" id="tagModal" style="display: none;">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -59,7 +75,7 @@
                                 @foreach (var tag in tags)
                                 {
                                     <tr>
-                                        <td><input type="checkbox" value="@tag.TagId" data-name="@tag.TagName"></td>
+                                        <td><input type="checkbox" value="@tag.TagId" data-name="@tag.TagName" /></td>
                                         <td>@tag.TagName</td>
                                     </tr>
                                 }
@@ -77,13 +93,56 @@
 </div>
 
 <style>
+    .save-post-container {
+        max-width: 850px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    }
+
+    .save-post-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .post-preview {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .preview-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .preview-content {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .tag-chip {
+        display: inline-block;
+        background-color: #e0e0e0;
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 15px;
+    }
+
     .modal {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0,0,0,0.5);
         z-index: 1000;
         display: flex;
         justify-content: center;
@@ -91,7 +150,7 @@
     }
 
     .modal-content {
-        background-color: white;
+        background: white;
         padding: 20px;
         border-radius: 5px;
         width: 500px;
@@ -102,111 +161,139 @@
     .modal-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
         border-bottom: 1px solid #ddd;
-        padding-bottom: 10px;
     }
 
     .modal-footer {
         border-top: 1px solid #ddd;
-        padding-top: 10px;
         text-align: right;
+        padding-top: 10px;
     }
 
     .close-modal {
-        background: none;
         border: none;
+        background: none;
         font-size: 24px;
         cursor: pointer;
-    }
-
-    .tag-chip {
-        display: inline-block;
-        background-color: #e0e0e0;
-        padding: 5px 10px;
-        margin: 5px;
-        border-radius: 15px;
     }
 </style>
 
 @section Scripts {
     <script>
-        // Back button functionality
-        document.getElementById('backBtn').addEventListener('click', () => {
-            window.location.href = '/Post/Index?restore=true';
-        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const draftData = JSON.parse(localStorage.getItem('draftData') || '{}');
+            const previewTitle = document.getElementById('preview-title');
+            const previewContent = document.getElementById('preview-content');
+            const coverImageInput = document.getElementById('cover-image-input');
+            const coverImagePreview = document.getElementById('cover-image-preview');
+            const coverImage = document.getElementById('cover-image');
+            const removeCoverImageBtn = document.querySelector('.remove-cover-image');
+            let coverImageUrl = null;
 
-        // Tag selection popup functionality
-        const tagModal = document.getElementById('tagModal');
-        const addCategoryBtn = document.getElementById('add-category');
-        const closeModalBtns = document.querySelectorAll('.close-modal');
-        const confirmTagsBtn = document.getElementById('confirmTags');
-        const selectedTagsDiv = document.getElementById('selected-tags');
-        let selectedTags = [];
+            // Preview post
+            previewTitle.textContent = draftData.title || '';
+            previewContent.innerHTML = (draftData.content || '').replace(/\n/g, '<br />');
 
-        // Open modal
-        addCategoryBtn.addEventListener('click', () => {
-            // Reset checkboxes to reflect current selections
-            document.querySelectorAll('#tagTableBody input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = selectedTags.includes(parseInt(checkbox.value));
-            });
-            tagModal.style.display = 'flex';
-        });
+            // Cover image upload
+            coverImageInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('image', file);
 
-        // Close modal
-        closeModalBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tagModal.style.display = 'none';
-            });
-        });
-
-        // Confirm tag selection
-        confirmTagsBtn.addEventListener('click', () => {
-            const checkboxes = document.querySelectorAll('#tagTableBody input[type="checkbox"]:checked');
-            selectedTags = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            const tags = Array.from(checkboxes).map(cb => cb.dataset.name);
-
-            // Update UI with selected tags
-            selectedTagsDiv.innerHTML = tags.map(tag => `<span class="tag-chip">${tag}</span>`).join('');
-            tagModal.style.display = 'none';
-        });
-
-        // Close modal when clicking outside
-        tagModal.addEventListener('click', (e) => {
-            if (e.target === tagModal) {
-                tagModal.style.display = 'none';
-            }
-        });
-
-        // Handle form submission
-        document.getElementById('final-post-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const saved = JSON.parse(localStorage.getItem('draftData') || '{}');
-
-            const finalPayload = {
-                ...saved,
-                categoryIds: selectedTags // Include selected tag IDs
-            };
-
-            try {
-                const response = await fetch('/Post/ConfirmSave', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finalPayload)
-                });
-
-                if (response.ok) {
-                    localStorage.removeItem('draftData');
-                    alert('Bài viết đã được lưu!');
-                    window.location.href = '/';
-                } else {
-                    alert('Lỗi khi lưu bài viết!');
+                    try {
+                        const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        if (data.url) {
+                            coverImage.src = data.url;
+                            coverImageUrl = data.url;
+                            coverImagePreview.style.display = 'block';
+                        } else {
+                            throw new Error('No URL returned');
+                        }
+                    } catch {
+                        const fallbackUrl = URL.createObjectURL(file);
+                        coverImage.src = fallbackUrl;
+                        coverImageUrl = fallbackUrl;
+                        coverImagePreview.style.display = 'block';
+                    }
                 }
-            } catch (error) {
-                console.error('Save failed:', error);
-                alert('Lỗi khi lưu bài viết!');
-            }
+            });
+
+            removeCoverImageBtn.addEventListener('click', () => {
+                coverImage.src = '';
+                coverImageUrl = null;
+                coverImagePreview.style.display = 'none';
+                coverImageInput.value = '';
+            });
+
+            // Back button
+            document.querySelector('.back-btn').addEventListener('click', () => {
+                window.location.href = '/Post/Index?restore=true';
+            });
+
+            // Tags
+            let selectedTags = [];
+            const tagModal = document.getElementById('tagModal');
+            const selectedTagsDiv = document.getElementById('selected-tags');
+
+            document.getElementById('add-category').addEventListener('click', () => {
+                document.querySelectorAll('#tagTableBody input[type="checkbox"]').forEach(cb => {
+                    cb.checked = selectedTags.includes(parseInt(cb.value));
+                });
+                tagModal.style.display = 'flex';
+            });
+
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => tagModal.style.display = 'none');
+            });
+
+            tagModal.addEventListener('click', (e) => {
+                if (e.target === tagModal) tagModal.style.display = 'none';
+            });
+
+            document.getElementById('confirmTags').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('#tagTableBody input[type="checkbox"]:checked');
+                selectedTags = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                const tags = Array.from(checkboxes).map(cb => cb.dataset.name);
+                selectedTagsDiv.innerHTML = tags.map(tag => `<span class="tag-chip">${tag}</span>`).join('');
+                tagModal.style.display = 'none';
+            });
+
+            // Submit
+            document.getElementById('final-post-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const finalPayload = {
+                    title: draftData.title,
+                    content: draftData.content,
+                    imageUrls: draftData.imageUrls || [],
+                    coverImageUrl: coverImageUrl,
+                    tags: draftData.tags || [],
+                    categoryIds: selectedTags
+                };
+
+                try {
+                    const res = await fetch('/Post/ConfirmSave', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(finalPayload)
+                    });
+
+                    if (res.ok) {
+                        localStorage.removeItem('draftData');
+                        alert('Bài viết đã được lưu thành công!');
+                        window.location.href = '/';
+                    } else {
+                        alert('Lỗi khi lưu bài viết!');
+                    }
+                } catch (err) {
+                    console.error('Error saving post:', err);
+                    alert('Lỗi kỹ thuật khi lưu bài viết.');
+                }
+            });
         });
     </script>
 }
