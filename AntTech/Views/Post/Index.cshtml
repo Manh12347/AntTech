@@ -72,8 +72,8 @@
     .plus-menu {
         display: none;
         position: absolute;
-        left: -30px; /* Align with the plus icon */
-        top: 100%; /* Position below the plus icon */
+        left: -30px;
+        top: 100%;
         margin-top: 5px;
         background-color: white;
         border: 1px solid #ddd;
@@ -103,6 +103,17 @@
         .plus-menu-item:hover {
             background-color: #f5f5f5;
         }
+
+    .image-preview-container {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
 </style>
 
 @section Scripts {
@@ -121,7 +132,6 @@
             textarea.className = 'content-input';
             textarea.placeholder = 'Nội dung bài viết';
 
-            // Auto-resize on input
             textarea.addEventListener('input', () => {
                 textarea.style.height = 'auto';
                 textarea.style.height = `${textarea.scrollHeight}px`;
@@ -146,7 +156,6 @@
             wrapper.appendChild(plusMenu);
             editorBlocks.appendChild(wrapper);
 
-            // Position the plus icon
             textarea.addEventListener('input', updatePlusIcon);
             textarea.addEventListener('click', updatePlusIcon);
             textarea.addEventListener('keyup', updatePlusIcon);
@@ -156,21 +165,18 @@
                 }
             });
 
-            // Toggle menu (positioning handled by CSS)
             plusIcon.addEventListener('click', (e) => {
                 e.stopPropagation();
                 currentInsertTarget = wrapper;
                 plusMenu.style.display = plusMenu.style.display === 'block' ? 'none' : 'block';
             });
 
-            // Hide menu when clicking outside
             document.addEventListener('click', (e) => {
                 if (!plusIcon.contains(e.target) && !plusMenu.contains(e.target)) {
                     plusMenu.style.display = 'none';
                 }
             });
 
-            // Handle plus menu actions
             plusMenu.querySelector('.insert-picture').addEventListener('click', () => {
                 fileInput.setAttribute('data-insert-after', wrapper.dataset.blockId || '');
                 fileInput.click();
@@ -192,7 +198,6 @@
                 plusMenu.style.display = 'none';
             });
 
-            // Trigger resize once
             textarea.dispatchEvent(new Event('input'));
             updatePlusIcon();
 
@@ -223,50 +228,58 @@
             const imageWrapper = document.createElement('div');
             imageWrapper.className = 'image-preview-container';
             imageWrapper.innerHTML = `
-                <div class="image-preview-header">
-                    <button class="btn btn-secondary remove-image">Remove Image</button>
-                </div>
                 <img class="image-preview" src="${imageUrl}" alt="Uploaded Image" />
+                <button class="btn btn-secondary remove-image">Remove</button>
             `;
 
             const newTextareaBlock = createTextareaBlock();
-            editorBlocks.insertBefore(imageWrapper, afterElement.nextSibling);
-            editorBlocks.insertBefore(newTextareaBlock, imageWrapper.nextSibling);
-
-            const prevTextarea = afterElement.querySelector('textarea');
-            if (prevTextarea && prevTextarea.value.trim() === '') {
-                prevTextarea.style.height = '40px';
+            if (afterElement) {
+                editorBlocks.insertBefore(imageWrapper, afterElement.nextSibling);
+                editorBlocks.insertBefore(newTextareaBlock, imageWrapper.nextSibling);
+            } else {
+                editorBlocks.appendChild(imageWrapper);
+                editorBlocks.appendChild(newTextareaBlock);
             }
 
             imageWrapper.querySelector('.remove-image').addEventListener('click', () => {
                 editorBlocks.removeChild(imageWrapper);
+                if (newTextareaBlock.parentNode) {
+                    editorBlocks.removeChild(newTextareaBlock);
+                }
             });
+
+            const prevTextarea = afterElement ? afterElement.querySelector('textarea') : null;
+            if (prevTextarea && prevTextarea.value.trim() === '') {
+                prevTextarea.style.height = '40px';
+            }
         }
 
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            const afterId = fileInput.getAttribute('data-insert-after');
+            const afterElement = currentInsertTarget || editorBlocks.lastChild;
 
             if (file) {
-                const formData = new FormData(uploadForm);
+                const formData = new FormData();
+                formData.append('image', file);
+
                 try {
                     const response = await fetch('/api/upload', {
                         method: 'POST',
                         body: formData
                     });
                     const data = await response.json();
-                    const imageUrl = data.url || URL.createObjectURL(file);
-                    const afterElement = currentInsertTarget || editorBlocks.lastChild;
-                    insertImageBlock(imageUrl, afterElement);
+                    if (data.url) {
+                        insertImageBlock(data.url, afterElement);
+                    } else {
+                        throw new Error('No URL returned');
+                    }
                 } catch (err) {
                     console.error('Upload failed:', err);
                     const fallbackUrl = URL.createObjectURL(file);
-                    const afterElement = currentInsertTarget || editorBlocks.lastChild;
                     insertImageBlock(fallbackUrl, afterElement);
                 }
             }
             currentInsertTarget = null;
-
             fileInput.value = '';
         });
 
@@ -317,19 +330,21 @@
             updatePlusIcon();
         }
 
-        // Create initial textarea block
         createTextareaBlock();
 
-        // Back button functionality
         document.querySelector('.back-btn').addEventListener('click', () => {
             window.location.href = "/";
         });
 
-        // Save draft and navigate to SavePost
         document.querySelector('.next-step').addEventListener('click', async () => {
-            const title = document.querySelector('.title-input').value;
+            const title = document.querySelector('.title-input').value.trim();
             let content = '';
             const imageUrls = [];
+
+            if (!title) {
+                alert('Vui lòng nhập tiêu đề bài viết.');
+                return;
+            }
 
             document.querySelectorAll('.editor-blocks > div').forEach(block => {
                 if (block.classList.contains('textarea-container')) {
@@ -342,14 +357,17 @@
                 }
             });
 
-            // Save draft to localStorage before navigating
+            if (!content.trim()) {
+                alert('Vui lòng nhập nội dung bài viết.');
+                return;
+            }
+
             const draftData = { title, content, imageUrls };
             localStorage.setItem('draftData', JSON.stringify(draftData));
-
+            console.log('Draft Data:', draftData);
             window.location.href = '/Post/SavePost';
         });
 
-        // Restore draft on page load
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const shouldRestore = urlParams.get('restore') === 'true';
@@ -357,11 +375,8 @@
 
             if (shouldRestore && draft.title) {
                 document.querySelector('.title-input').value = draft.title;
-
-                // Clear existing blocks
                 editorBlocks.innerHTML = '';
 
-                // Split content by lines and rebuild blocks
                 const blocks = draft.content.split('\n').filter(line => line.trim() !== '');
                 blocks.forEach(line => {
                     if (line.trim().startsWith('![Image]')) {
@@ -377,7 +392,6 @@
                     }
                 });
 
-                // Ensure at least one textarea block exists
                 if (!editorBlocks.querySelector('.textarea-container')) {
                     createTextareaBlock();
                 }
